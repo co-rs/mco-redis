@@ -1,0 +1,17 @@
+[package]
+name = "cogo-redis"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cogo = "0.1"
+itoa = "0.4.5"
+btoi = "0.4.2"
+log = "0.4"
+derive_more = "0.99"
+
+[dev-dependencies]
+rand = "0.8"
+env_logger = "0.9"
