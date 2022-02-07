@@ -2,10 +2,9 @@
 use std::io;
 
 use derive_more::{Display, From};
-use ntex::{connect, util::ByteString, util::Either};
-use crate::cmd::ByteString;
+use crate::ByteString;
 
-use super::codec::Response;
+use super::codec_redis::Response;
 
 #[derive(Debug, Display)]
 /// Redis protocol errors
@@ -36,15 +35,6 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<Either<Error, io::Error>> for Error {
-    fn from(err: Either<Error, io::Error>) -> Error {
-        match err {
-            Either::Left(err) => err,
-            Either::Right(err) => Error::PeerGone(Some(err)),
-        }
-    }
-}
-
 #[derive(Debug, Display, From)]
 /// Redis connectivity errors
 pub enum ConnectError {
@@ -53,7 +43,7 @@ pub enum ConnectError {
     /// Command execution error
     Command(CommandError),
     /// Io connectivity error
-    Connect(connect::ConnectError),
+    Connect(String),
 }
 
 impl std::error::Error for ConnectError {}
@@ -73,9 +63,3 @@ pub enum CommandError {
 }
 
 impl std::error::Error for CommandError {}
-
-impl From<Either<Error, io::Error>> for CommandError {
-    fn from(err: Either<Error, io::Error>) -> CommandError {
-        Into::<Error>::into(err).into()
-    }
-}

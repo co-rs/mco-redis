@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use crate::cmd::Bytes;
+use crate::Bytes;
 
 use super::{utils, Command, CommandError};
-use crate::codec::{BulkString, Request, Response};
+use crate::codec_redis::{BulkString, Request, Response};
 
 /// HGET redis command
 ///

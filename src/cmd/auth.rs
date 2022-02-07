@@ -1,5 +1,5 @@
 use super::{Command, CommandError};
-use crate::codec::{BulkString, Request, Response};
+use crate::codec_redis::{BulkString, Request, Response};
 
 /// AUTH redis command
 pub fn Auth<T>(password: T) -> AuthCommand

@@ -2,7 +2,7 @@
 #![allow(non_snake_case, clippy::wrong_self_convention)]
 
 use crate::bytes::ByteString;
-use super::codec::{Request, Response};
+use super::codec_redis::{Request, Response};
 use super::errors::CommandError;
 
 mod auth;
@@ -41,8 +41,4 @@ pub mod commands {
     pub use super::strings::SetCommand;
     pub use super::utils::{BulkOutputCommand, IntOutputCommand};
 }
-
-pub type Bytes = bytes::Bytes;
-pub type BytesMut = bytes::BytesMut;
-pub type ByteStrings = ByteString;
 

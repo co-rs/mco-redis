@@ -1,6 +1,6 @@
 
 use super::{Command, CommandError};
-use crate::codec::{Request, Response};
+use crate::codec_redis::{Request, Response};
 
 /// SELECT redis command
 ///

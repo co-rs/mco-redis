@@ -1,5 +1,5 @@
 use super::{utils, Command, CommandError};
-use crate::codec::{BulkString, Request, Response};
+use crate::codec_redis::{BulkString, Request, Response};
 use std::convert::TryFrom;
 
 /// DEL redis command
