@@ -5,8 +5,8 @@ use std::sync::atomic::Ordering::{Acquire, Relaxed, Release};
 use std::sync::atomic::{self, AtomicUsize};
 use std::{cmp, fmt, hash, mem, ptr, ptr::NonNull, slice, usize};
 
-use crate::bytes::pool::{PoolId, PoolRef};
-use crate::bytes::{buf::IntoIter, buf::UninitSlice, debug, Buf, BufMut};
+use crate::pool::{PoolId, PoolRef};
+use crate::{buf::IntoIter, buf::UninitSlice, debug, Buf, BufMut};
 
 /// A reference counted contiguous slice of memory.
 ///
@@ -20,7 +20,7 @@ use crate::bytes::{buf::IntoIter, buf::UninitSlice, debug, Buf, BufMut};
 /// be freed.
 ///
 /// ```
-/// use cogo_redis::Bytes;
+/// use ntex_bytes::Bytes;
 ///
 /// let mut mem = Bytes::from(&b"Hello world"[..]);
 /// let a = mem.slice(0..5);
@@ -128,7 +128,7 @@ pub struct Bytes {
 /// # Examples
 ///
 /// ```
-/// use cogo_redis::{BytesMut, BufMut};
+/// use ntex_bytes::{BytesMut, BufMut};
 ///
 /// let mut buf = BytesMut::with_capacity(64);
 ///
@@ -174,7 +174,7 @@ pub struct BytesMut {
 /// # Examples
 ///
 /// ```
-/// use cogo_redis::{BytesVec, BufMut};
+/// use ntex_bytes::{BytesVec, BufMut};
 ///
 /// let mut buf = BytesVec::with_capacity(64);
 ///
@@ -428,7 +428,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::Bytes;
+    /// use ntex_bytes::Bytes;
     ///
     /// let b = Bytes::new();
     /// assert_eq!(&b[..], b"");
@@ -448,7 +448,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::Bytes;
+    /// use ntex_bytes::Bytes;
     ///
     /// let b = Bytes::from_static(b"hello");
     /// assert_eq!(&b[..], b"hello");
@@ -465,7 +465,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::Bytes;
+    /// use ntex_bytes::Bytes;
     ///
     /// let b = Bytes::from(&b"hello"[..]);
     /// assert_eq!(b.len(), 5);
@@ -480,7 +480,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::Bytes;
+    /// use ntex_bytes::Bytes;
     ///
     /// let b = Bytes::new();
     /// assert!(b.is_empty());
@@ -494,7 +494,7 @@ impl Bytes {
     ///
     /// # Examples
     /// ```
-    /// use cogo_redis::{Bytes, BytesMut};
+    /// use ntex_bytes::{Bytes, BytesMut};
     ///
     /// assert!(Bytes::from(BytesMut::from(&[0, 0, 0, 0][..])).is_inline());
     /// assert!(Bytes::from(Vec::with_capacity(4)).is_inline());
@@ -535,7 +535,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::Bytes;
+    /// use ntex_bytes::Bytes;
     ///
     /// let a = Bytes::from(&b"hello world"[..]);
     /// let b = a.slice(2..5);
@@ -594,7 +594,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::Bytes;
+    /// use ntex_bytes::Bytes;
     ///
     /// let bytes = Bytes::from(&b"012345678"[..]);
     /// let as_slice = bytes.as_ref();
@@ -633,7 +633,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::Bytes;
+    /// use ntex_bytes::Bytes;
     ///
     /// let mut a = Bytes::from(&b"hello world"[..]);
     /// let b = a.split_off(5);
@@ -672,7 +672,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::Bytes;
+    /// use ntex_bytes::Bytes;
     ///
     /// let mut a = Bytes::from(&b"hello world"[..]);
     /// let b = a.split_to(5);
@@ -712,7 +712,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::Bytes;
+    /// use ntex_bytes::Bytes;
     ///
     /// let mut buf = Bytes::from(&b"hello world"[..]);
     /// buf.truncate(5);
@@ -732,7 +732,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::Bytes;
+    /// use ntex_bytes::Bytes;
     ///
     /// let mut buf = Bytes::from(&b"hello world"[..]);
     /// buf.trimdown();
@@ -762,7 +762,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::Bytes;
+    /// use ntex_bytes::Bytes;
     ///
     /// let mut buf = Bytes::from(&b"hello world"[..]);
     /// buf.clear();
@@ -782,7 +782,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::Bytes;
+    /// use ntex_bytes::Bytes;
     ///
     /// let a = Bytes::copy_from_slice(&b"Mary had a little lamb, little lamb, little lamb..."[..]);
     ///
@@ -814,7 +814,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{Buf, Bytes};
+    /// use ntex_bytes::{Buf, Bytes};
     ///
     /// let buf = Bytes::from(&b"abc"[..]);
     /// let mut iter = buf.iter();
@@ -950,51 +950,9 @@ impl From<&'static str> for Bytes {
     }
 }
 
-impl FromIterator<u8> for BytesMut {
-    fn from_iter<T: IntoIterator<Item = u8>>(into_iter: T) -> Self {
-        let iter = into_iter.into_iter();
-        let (min, maybe_max) = iter.size_hint();
-
-        let mut out = BytesMut::with_capacity(maybe_max.unwrap_or(min));
-        for i in iter {
-            out.reserve(1);
-            out.put_u8(i);
-        }
-
-        out
-    }
-}
-
-impl FromIterator<u8> for BytesVec {
-    fn from_iter<T: IntoIterator<Item = u8>>(into_iter: T) -> Self {
-        let iter = into_iter.into_iter();
-        let (min, maybe_max) = iter.size_hint();
-
-        let mut out = BytesVec::with_capacity(maybe_max.unwrap_or(min));
-        for i in iter {
-            out.reserve(1);
-            out.put_u8(i);
-        }
-
-        out
-    }
-}
-
 impl FromIterator<u8> for Bytes {
     fn from_iter<T: IntoIterator<Item = u8>>(into_iter: T) -> Self {
         BytesMut::from_iter(into_iter).freeze()
-    }
-}
-
-impl<'a> FromIterator<&'a u8> for BytesMut {
-    fn from_iter<T: IntoIterator<Item = &'a u8>>(into_iter: T) -> Self {
-        into_iter.into_iter().copied().collect::<BytesMut>()
-    }
-}
-
-impl<'a> FromIterator<&'a u8> for BytesVec {
-    fn from_iter<T: IntoIterator<Item = &'a u8>>(into_iter: T) -> Self {
-        into_iter.into_iter().copied().collect::<BytesVec>()
     }
 }
 
@@ -1003,6 +961,8 @@ impl<'a> FromIterator<&'a u8> for Bytes {
         BytesMut::from_iter(into_iter).freeze()
     }
 }
+
+impl Eq for Bytes {}
 
 impl PartialEq for Bytes {
     fn eq(&self, other: &Bytes) -> bool {
@@ -1021,8 +981,6 @@ impl Ord for Bytes {
         self.inner.as_ref().cmp(other.inner.as_ref())
     }
 }
-
-impl Eq for Bytes {}
 
 impl Default for Bytes {
     #[inline]
@@ -1095,7 +1053,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{BytesMut, BufMut};
+    /// use ntex_bytes::{BytesMut, BufMut};
     ///
     /// let mut bytes = BytesMut::with_capacity(64);
     ///
@@ -1116,7 +1074,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{BytesMut, BufMut, PoolId};
+    /// use ntex_bytes::{BytesMut, BufMut, PoolId};
     ///
     /// let mut bytes = BytesMut::with_capacity_in(64, PoolId::P1);
     ///
@@ -1174,7 +1132,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{BytesMut, BufMut};
+    /// use ntex_bytes::{BytesMut, BufMut};
     ///
     /// let mut bytes = BytesMut::new();
     ///
@@ -1195,7 +1153,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesMut;
+    /// use ntex_bytes::BytesMut;
     ///
     /// let b = BytesMut::from(&b"hello"[..]);
     /// assert_eq!(b.len(), 5);
@@ -1210,7 +1168,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesMut;
+    /// use ntex_bytes::BytesMut;
     ///
     /// let b = BytesMut::with_capacity(64);
     /// assert!(b.is_empty());
@@ -1225,10 +1183,10 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesMut;
+    /// use ntex_bytes::BytesMut;
     ///
     /// let b = BytesMut::with_capacity(64);
-    /// assert_eq!(b.capacity(), 96);
+    /// assert_eq!(b.capacity(), 64);
     /// ```
     #[inline]
     pub fn capacity(&self) -> usize {
@@ -1244,7 +1202,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{BytesMut, BufMut};
+    /// use ntex_bytes::{BytesMut, BufMut};
     /// use std::thread;
     ///
     /// let mut b = BytesMut::with_capacity(64);
@@ -1281,7 +1239,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesMut;
+    /// use ntex_bytes::BytesMut;
     ///
     /// let mut a = BytesMut::from(&b"hello world"[..]);
     /// let mut b = a.split_off(5);
@@ -1315,7 +1273,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{BytesMut, BufMut};
+    /// use ntex_bytes::{BytesMut, BufMut};
     ///
     /// let mut buf = BytesMut::with_capacity(1024);
     /// buf.put(&b"hello world"[..]);
@@ -1323,7 +1281,7 @@ impl BytesMut {
     /// let other = buf.split();
     ///
     /// assert!(buf.is_empty());
-    /// assert_eq!(1045, buf.capacity());
+    /// assert_eq!(1013, buf.capacity());
     ///
     /// assert_eq!(other, b"hello world"[..]);
     /// ```
@@ -1343,7 +1301,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesMut;
+    /// use ntex_bytes::BytesMut;
     ///
     /// let mut a = BytesMut::from(&b"hello world"[..]);
     /// let mut b = a.split_to(5);
@@ -1378,7 +1336,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesMut;
+    /// use ntex_bytes::BytesMut;
     ///
     /// let mut buf = BytesMut::from(&b"hello world"[..]);
     /// buf.truncate(5);
@@ -1395,7 +1353,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesMut;
+    /// use ntex_bytes::BytesMut;
     ///
     /// let mut buf = BytesMut::from(&b"hello world"[..]);
     /// buf.clear();
@@ -1419,7 +1377,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesMut;
+    /// use ntex_bytes::BytesMut;
     ///
     /// let mut buf = BytesMut::new();
     ///
@@ -1446,7 +1404,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesMut;
+    /// use ntex_bytes::BytesMut;
     ///
     /// let mut b = BytesMut::from(&b"hello world"[..]);
     ///
@@ -1496,7 +1454,7 @@ impl BytesMut {
     /// In the following example, a new buffer is allocated.
     ///
     /// ```
-    /// use cogo_redis::BytesMut;
+    /// use ntex_bytes::BytesMut;
     ///
     /// let mut buf = BytesMut::from(&b"hello"[..]);
     /// buf.reserve(64);
@@ -1506,7 +1464,7 @@ impl BytesMut {
     /// In the following example, the existing buffer is reclaimed.
     ///
     /// ```
-    /// use cogo_redis::{BytesMut, BufMut};
+    /// use ntex_bytes::{BytesMut, BufMut};
     ///
     /// let mut buf = BytesMut::with_capacity(128);
     /// buf.put(&[0; 64][..]);
@@ -1515,12 +1473,12 @@ impl BytesMut {
     /// let other = buf.split();
     ///
     /// assert!(buf.is_empty());
-    /// assert_eq!(buf.capacity(), 96);
+    /// assert_eq!(buf.capacity(), 64);
     ///
     /// drop(other);
     /// buf.reserve(128);
     ///
-    /// assert_eq!(buf.capacity(), 160);
+    /// assert_eq!(buf.capacity(), 128);
     /// assert_eq!(buf.as_ptr(), ptr);
     /// ```
     ///
@@ -1549,7 +1507,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesMut;
+    /// use ntex_bytes::BytesMut;
     ///
     /// let mut buf = BytesMut::with_capacity(0);
     /// buf.extend_from_slice(b"aaabbb");
@@ -1567,7 +1525,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{Buf, BytesMut};
+    /// use ntex_bytes::{Buf, BytesMut};
     ///
     /// let buf = BytesMut::from(&b"abc"[..]);
     /// let mut iter = buf.iter();
@@ -1671,19 +1629,19 @@ impl AsRef<[u8]> for BytesMut {
     }
 }
 
+impl AsMut<[u8]> for BytesMut {
+    #[inline]
+    fn as_mut(&mut self) -> &mut [u8] {
+        self.inner.as_mut()
+    }
+}
+
 impl Deref for BytesMut {
     type Target = [u8];
 
     #[inline]
     fn deref(&self) -> &[u8] {
         self.as_ref()
-    }
-}
-
-impl AsMut<[u8]> for BytesMut {
-    #[inline]
-    fn as_mut(&mut self) -> &mut [u8] {
-        self.inner.as_mut()
     }
 }
 
@@ -1740,6 +1698,8 @@ impl From<Bytes> for BytesMut {
     }
 }
 
+impl Eq for BytesMut {}
+
 impl PartialEq for BytesMut {
     #[inline]
     fn eq(&self, other: &BytesMut) -> bool {
@@ -1747,43 +1707,10 @@ impl PartialEq for BytesMut {
     }
 }
 
-impl PartialOrd for BytesMut {
-    #[inline]
-    fn partial_cmp(&self, other: &BytesMut) -> Option<cmp::Ordering> {
-        self.inner.as_ref().partial_cmp(other.inner.as_ref())
-    }
-}
-
-impl Ord for BytesMut {
-    #[inline]
-    fn cmp(&self, other: &BytesMut) -> cmp::Ordering {
-        self.inner.as_ref().cmp(other.inner.as_ref())
-    }
-}
-
-impl Eq for BytesMut {}
-
 impl Default for BytesMut {
     #[inline]
     fn default() -> BytesMut {
         BytesMut::new()
-    }
-}
-
-impl fmt::Debug for BytesMut {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(&debug::BsDebug(self.inner.as_ref()), fmt)
-    }
-}
-
-impl hash::Hash for BytesMut {
-    #[inline]
-    fn hash<H>(&self, state: &mut H)
-    where
-        H: hash::Hasher,
-    {
-        let s: &[u8] = self.as_ref();
-        s.hash(state);
     }
 }
 
@@ -1798,6 +1725,12 @@ impl BorrowMut<[u8]> for BytesMut {
     #[inline]
     fn borrow_mut(&mut self) -> &mut [u8] {
         self.as_mut()
+    }
+}
+
+impl fmt::Debug for BytesMut {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&debug::BsDebug(self.inner.as_ref()), fmt)
     }
 }
 
@@ -1842,6 +1775,27 @@ impl<'a> IntoIterator for &'a BytesMut {
 
     fn into_iter(self) -> Self::IntoIter {
         self.as_ref().iter()
+    }
+}
+
+impl FromIterator<u8> for BytesMut {
+    fn from_iter<T: IntoIterator<Item = u8>>(into_iter: T) -> Self {
+        let iter = into_iter.into_iter();
+        let (min, maybe_max) = iter.size_hint();
+
+        let mut out = BytesMut::with_capacity(maybe_max.unwrap_or(min));
+        for i in iter {
+            out.reserve(1);
+            out.put_u8(i);
+        }
+
+        out
+    }
+}
+
+impl<'a> FromIterator<&'a u8> for BytesMut {
+    fn from_iter<T: IntoIterator<Item = &'a u8>>(into_iter: T) -> Self {
+        into_iter.into_iter().copied().collect::<BytesMut>()
     }
 }
 
@@ -1893,7 +1847,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{BytesVec, BufMut};
+    /// use ntex_bytes::{BytesVec, BufMut};
     ///
     /// let mut bytes = BytesVec::with_capacity(64);
     ///
@@ -1914,7 +1868,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{BytesVec, BufMut, PoolId};
+    /// use ntex_bytes::{BytesVec, BufMut, PoolId};
     ///
     /// let mut bytes = BytesVec::with_capacity_in(64, PoolId::P1);
     ///
@@ -1937,17 +1891,19 @@ impl BytesVec {
     }
 
     /// Creates a new `BytesVec` from slice, by copying it.
-    pub fn copy_from_slice(src: &[u8]) -> Self {
+    pub fn copy_from_slice<T: AsRef<[u8]>>(src: T) -> Self {
         Self::copy_from_slice_in(src, PoolId::DEFAULT)
     }
 
     /// Creates a new `BytesVec` from slice, by copying it.
-    pub fn copy_from_slice_in<T>(src: &[u8], pool: T) -> Self
+    pub fn copy_from_slice_in<T, U>(src: T, pool: U) -> Self
     where
-        PoolRef: From<T>,
+        T: AsRef<[u8]>,
+        PoolRef: From<U>,
     {
+        let s = src.as_ref();
         BytesVec {
-            inner: InnerVec::from_slice(src.len(), src, pool.into()),
+            inner: InnerVec::from_slice(s.len(), s, pool.into()),
         }
     }
 
@@ -1959,7 +1915,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{BytesVec, BufMut};
+    /// use ntex_bytes::{BytesVec, BufMut};
     ///
     /// let mut bytes = BytesVec::new();
     ///
@@ -1980,7 +1936,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesVec;
+    /// use ntex_bytes::BytesVec;
     ///
     /// let b = BytesVec::copy_from_slice(&b"hello"[..]);
     /// assert_eq!(b.len(), 5);
@@ -1995,7 +1951,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesVec;
+    /// use ntex_bytes::BytesVec;
     ///
     /// let b = BytesVec::with_capacity(64);
     /// assert!(b.is_empty());
@@ -2010,10 +1966,10 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesVec;
+    /// use ntex_bytes::BytesVec;
     ///
     /// let b = BytesVec::with_capacity(64);
-    /// assert_eq!(b.capacity(), 96);
+    /// assert_eq!(b.capacity(), 64);
     /// ```
     #[inline]
     pub fn capacity(&self) -> usize {
@@ -2029,7 +1985,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{BytesVec, BufMut};
+    /// use ntex_bytes::{BytesVec, BufMut};
     /// use std::thread;
     ///
     /// let mut b = BytesVec::with_capacity(64);
@@ -2064,7 +2020,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{BytesVec, BufMut};
+    /// use ntex_bytes::{BytesVec, BufMut};
     ///
     /// let mut buf = BytesVec::with_capacity(1024);
     /// buf.put(&b"hello world"[..]);
@@ -2072,7 +2028,7 @@ impl BytesVec {
     /// let other = buf.split();
     ///
     /// assert!(buf.is_empty());
-    /// assert_eq!(1045, buf.capacity());
+    /// assert_eq!(1013, buf.capacity());
     ///
     /// assert_eq!(other, b"hello world"[..]);
     /// ```
@@ -2091,7 +2047,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesVec;
+    /// use ntex_bytes::BytesVec;
     ///
     /// let mut a = BytesVec::copy_from_slice(&b"hello world"[..]);
     /// let mut b = a.split_to(5);
@@ -2125,7 +2081,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesVec;
+    /// use ntex_bytes::BytesVec;
     ///
     /// let mut buf = BytesVec::copy_from_slice(&b"hello world"[..]);
     /// buf.truncate(5);
@@ -2142,7 +2098,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesVec;
+    /// use ntex_bytes::BytesVec;
     ///
     /// let mut buf = BytesVec::copy_from_slice(&b"hello world"[..]);
     /// buf.clear();
@@ -2166,7 +2122,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesVec;
+    /// use ntex_bytes::BytesVec;
     ///
     /// let mut buf = BytesVec::new();
     ///
@@ -2193,7 +2149,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesVec;
+    /// use ntex_bytes::BytesVec;
     ///
     /// let mut b = BytesVec::copy_from_slice(&b"hello world"[..]);
     ///
@@ -2243,7 +2199,7 @@ impl BytesVec {
     /// In the following example, a new buffer is allocated.
     ///
     /// ```
-    /// use cogo_redis::BytesVec;
+    /// use ntex_bytes::BytesVec;
     ///
     /// let mut buf = BytesVec::copy_from_slice(&b"hello"[..]);
     /// buf.reserve(64);
@@ -2253,7 +2209,7 @@ impl BytesVec {
     /// In the following example, the existing buffer is reclaimed.
     ///
     /// ```
-    /// use cogo_redis::{BytesVec, BufMut};
+    /// use ntex_bytes::{BytesVec, BufMut};
     ///
     /// let mut buf = BytesVec::with_capacity(128);
     /// buf.put(&[0; 64][..]);
@@ -2262,12 +2218,12 @@ impl BytesVec {
     /// let other = buf.split();
     ///
     /// assert!(buf.is_empty());
-    /// assert_eq!(buf.capacity(), 96);
+    /// assert_eq!(buf.capacity(), 64);
     ///
     /// drop(other);
     /// buf.reserve(128);
     ///
-    /// assert_eq!(buf.capacity(), 160);
+    /// assert_eq!(buf.capacity(), 128);
     /// assert_eq!(buf.as_ptr(), ptr);
     /// ```
     ///
@@ -2296,7 +2252,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::BytesVec;
+    /// use ntex_bytes::BytesVec;
     ///
     /// let mut buf = BytesVec::with_capacity(0);
     /// buf.extend_from_slice(b"aaabbb");
@@ -2323,7 +2279,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{Buf, BytesVec};
+    /// use ntex_bytes::{Buf, BytesVec};
     ///
     /// let buf = BytesVec::copy_from_slice(&b"abc"[..]);
     /// let mut iter = buf.iter();
@@ -2459,41 +2415,10 @@ impl PartialEq for BytesVec {
     }
 }
 
-impl Ord for BytesVec {
-    #[inline]
-    fn cmp(&self, other: &BytesVec) -> cmp::Ordering {
-        self.inner.as_ref().cmp(other.inner.as_ref())
-    }
-}
-
-impl PartialOrd for BytesVec {
-    #[inline]
-    fn partial_cmp(&self, other: &BytesVec) -> Option<cmp::Ordering> {
-        self.inner.as_ref().partial_cmp(other.inner.as_ref())
-    }
-}
-
 impl Default for BytesVec {
     #[inline]
     fn default() -> BytesVec {
         BytesVec::new()
-    }
-}
-
-impl fmt::Debug for BytesVec {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(&debug::BsDebug(self.inner.as_ref()), fmt)
-    }
-}
-
-impl hash::Hash for BytesVec {
-    #[inline]
-    fn hash<H>(&self, state: &mut H)
-    where
-        H: hash::Hasher,
-    {
-        let s: &[u8] = self.as_ref();
-        s.hash(state);
     }
 }
 
@@ -2508,6 +2433,12 @@ impl BorrowMut<[u8]> for BytesVec {
     #[inline]
     fn borrow_mut(&mut self) -> &mut [u8] {
         self.as_mut()
+    }
+}
+
+impl fmt::Debug for BytesVec {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&debug::BsDebug(self.inner.as_ref()), fmt)
     }
 }
 
@@ -2546,6 +2477,27 @@ impl<'a> IntoIterator for &'a BytesVec {
     }
 }
 
+impl FromIterator<u8> for BytesVec {
+    fn from_iter<T: IntoIterator<Item = u8>>(into_iter: T) -> Self {
+        let iter = into_iter.into_iter();
+        let (min, maybe_max) = iter.size_hint();
+
+        let mut out = BytesVec::with_capacity(maybe_max.unwrap_or(min));
+        for i in iter {
+            out.reserve(1);
+            out.put_u8(i);
+        }
+
+        out
+    }
+}
+
+impl<'a> FromIterator<&'a u8> for BytesVec {
+    fn from_iter<T: IntoIterator<Item = &'a u8>>(into_iter: T) -> Self {
+        into_iter.into_iter().copied().collect::<BytesVec>()
+    }
+}
+
 impl Extend<u8> for BytesVec {
     fn extend<T>(&mut self, iter: T)
     where
@@ -2581,9 +2533,12 @@ impl InnerVec {
 
     #[inline]
     fn from_slice(cap: usize, src: &[u8], pool: PoolRef) -> InnerVec {
-        // TODO: vec must be aligned to SharedVec instead of u8
-        let mut vec = Vec::<SharedVec>::with_capacity((cap / SHARED_VEC_SIZE) + 2);
-        #[allow(clippy::uninit_vec)]
+        // vec must be aligned to SharedVec instead of u8
+        let mut vec_cap = (cap / SHARED_VEC_SIZE) + 1;
+        if cap % SHARED_VEC_SIZE != 0 {
+            vec_cap += 1;
+        }
+        let mut vec = Vec::<SharedVec>::with_capacity(vec_cap);
         unsafe {
             // Store data in vec
             let len = src.len() as u32;
@@ -2959,9 +2914,12 @@ impl Inner {
 
     #[inline]
     fn from_slice(cap: usize, src: &[u8], pool: PoolRef) -> Inner {
-        // TODO: vec must be aligned to SharedVec instead of u8
-        let mut vec = Vec::<SharedVec>::with_capacity((cap / SHARED_VEC_SIZE) + 2);
-        #[allow(clippy::uninit_vec)]
+        // vec must be aligned to SharedVec instead of u8
+        let mut vec_cap = (cap / SHARED_VEC_SIZE) + 1;
+        if cap % SHARED_VEC_SIZE != 0 {
+            vec_cap += 1;
+        }
+        let mut vec = Vec::<SharedVec>::with_capacity(vec_cap);
         unsafe {
             // Store data in vec
             let len = src.len();
@@ -3690,21 +3648,9 @@ impl PartialEq<[u8]> for BytesMut {
     }
 }
 
-impl PartialOrd<[u8]> for BytesMut {
-    fn partial_cmp(&self, other: &[u8]) -> Option<cmp::Ordering> {
-        (**self).partial_cmp(other)
-    }
-}
-
 impl PartialEq<BytesMut> for [u8] {
     fn eq(&self, other: &BytesMut) -> bool {
         *other == *self
-    }
-}
-
-impl PartialOrd<BytesMut> for [u8] {
-    fn partial_cmp(&self, other: &BytesMut) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
     }
 }
 
@@ -3714,21 +3660,9 @@ impl PartialEq<str> for BytesMut {
     }
 }
 
-impl PartialOrd<str> for BytesMut {
-    fn partial_cmp(&self, other: &str) -> Option<cmp::Ordering> {
-        (**self).partial_cmp(other.as_bytes())
-    }
-}
-
 impl PartialEq<BytesMut> for str {
     fn eq(&self, other: &BytesMut) -> bool {
         *other == *self
-    }
-}
-
-impl PartialOrd<BytesMut> for str {
-    fn partial_cmp(&self, other: &BytesMut) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
     }
 }
 
@@ -3738,21 +3672,9 @@ impl PartialEq<Vec<u8>> for BytesMut {
     }
 }
 
-impl PartialOrd<Vec<u8>> for BytesMut {
-    fn partial_cmp(&self, other: &Vec<u8>) -> Option<cmp::Ordering> {
-        (**self).partial_cmp(&other[..])
-    }
-}
-
 impl PartialEq<BytesMut> for Vec<u8> {
     fn eq(&self, other: &BytesMut) -> bool {
         *other == *self
-    }
-}
-
-impl PartialOrd<BytesMut> for Vec<u8> {
-    fn partial_cmp(&self, other: &BytesMut) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
     }
 }
 
@@ -3762,21 +3684,9 @@ impl PartialEq<String> for BytesMut {
     }
 }
 
-impl PartialOrd<String> for BytesMut {
-    fn partial_cmp(&self, other: &String) -> Option<cmp::Ordering> {
-        (**self).partial_cmp(other.as_bytes())
-    }
-}
-
 impl PartialEq<BytesMut> for String {
     fn eq(&self, other: &BytesMut) -> bool {
         *other == *self
-    }
-}
-
-impl PartialOrd<BytesMut> for String {
-    fn partial_cmp(&self, other: &BytesMut) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
     }
 }
 
@@ -3789,36 +3699,15 @@ where
     }
 }
 
-impl<'a, T: ?Sized> PartialOrd<&'a T> for BytesMut
-where
-    BytesMut: PartialOrd<T>,
-{
-    fn partial_cmp(&self, other: &&'a T) -> Option<cmp::Ordering> {
-        self.partial_cmp(*other)
-    }
-}
-
 impl PartialEq<BytesMut> for &[u8] {
     fn eq(&self, other: &BytesMut) -> bool {
         *other == *self
     }
 }
 
-impl PartialOrd<BytesMut> for &[u8] {
-    fn partial_cmp(&self, other: &BytesMut) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
-    }
-}
-
 impl PartialEq<BytesMut> for &str {
     fn eq(&self, other: &BytesMut) -> bool {
         *other == *self
-    }
-}
-
-impl PartialOrd<BytesMut> for &str {
-    fn partial_cmp(&self, other: &BytesMut) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
     }
 }
 
@@ -3951,6 +3840,12 @@ where
     }
 }
 
+impl From<BytesVec> for Bytes {
+    fn from(b: BytesVec) -> Self {
+        b.freeze()
+    }
+}
+
 impl<'a, T: ?Sized> PartialOrd<&'a T> for Bytes
 where
     Bytes: PartialOrd<T>,
@@ -4002,21 +3897,9 @@ impl PartialEq<[u8]> for BytesVec {
     }
 }
 
-impl PartialOrd<[u8]> for BytesVec {
-    fn partial_cmp(&self, other: &[u8]) -> Option<cmp::Ordering> {
-        (**self).partial_cmp(other)
-    }
-}
-
 impl PartialEq<BytesVec> for [u8] {
     fn eq(&self, other: &BytesVec) -> bool {
         *other == *self
-    }
-}
-
-impl PartialOrd<BytesVec> for [u8] {
-    fn partial_cmp(&self, other: &BytesVec) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
     }
 }
 
@@ -4026,21 +3909,9 @@ impl PartialEq<str> for BytesVec {
     }
 }
 
-impl PartialOrd<str> for BytesVec {
-    fn partial_cmp(&self, other: &str) -> Option<cmp::Ordering> {
-        (**self).partial_cmp(other.as_bytes())
-    }
-}
-
 impl PartialEq<BytesVec> for str {
     fn eq(&self, other: &BytesVec) -> bool {
         *other == *self
-    }
-}
-
-impl PartialOrd<BytesVec> for str {
-    fn partial_cmp(&self, other: &BytesVec) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
     }
 }
 
@@ -4050,21 +3921,9 @@ impl PartialEq<Vec<u8>> for BytesVec {
     }
 }
 
-impl PartialOrd<Vec<u8>> for BytesVec {
-    fn partial_cmp(&self, other: &Vec<u8>) -> Option<cmp::Ordering> {
-        (**self).partial_cmp(&other[..])
-    }
-}
-
 impl PartialEq<BytesVec> for Vec<u8> {
     fn eq(&self, other: &BytesVec) -> bool {
         *other == *self
-    }
-}
-
-impl PartialOrd<BytesVec> for Vec<u8> {
-    fn partial_cmp(&self, other: &BytesVec) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
     }
 }
 
@@ -4074,21 +3933,9 @@ impl PartialEq<String> for BytesVec {
     }
 }
 
-impl PartialOrd<String> for BytesVec {
-    fn partial_cmp(&self, other: &String) -> Option<cmp::Ordering> {
-        (**self).partial_cmp(other.as_bytes())
-    }
-}
-
 impl PartialEq<BytesVec> for String {
     fn eq(&self, other: &BytesVec) -> bool {
         *other == *self
-    }
-}
-
-impl PartialOrd<BytesVec> for String {
-    fn partial_cmp(&self, other: &BytesVec) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
     }
 }
 
@@ -4101,36 +3948,15 @@ where
     }
 }
 
-impl<'a, T: ?Sized> PartialOrd<&'a T> for BytesVec
-where
-    BytesVec: PartialOrd<T>,
-{
-    fn partial_cmp(&self, other: &&'a T) -> Option<cmp::Ordering> {
-        self.partial_cmp(*other)
-    }
-}
-
 impl PartialEq<BytesVec> for &[u8] {
     fn eq(&self, other: &BytesVec) -> bool {
         *other == *self
     }
 }
 
-impl PartialOrd<BytesVec> for &[u8] {
-    fn partial_cmp(&self, other: &BytesVec) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
-    }
-}
-
 impl PartialEq<BytesVec> for &str {
     fn eq(&self, other: &BytesVec) -> bool {
         *other == *self
-    }
-}
-
-impl PartialOrd<BytesVec> for &str {
-    fn partial_cmp(&self, other: &BytesVec) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
     }
 }
 
@@ -4191,5 +4017,31 @@ mod tests {
 
         let b = BytesMut::try_from(b).unwrap();
         assert_eq!(b, LONG);
+    }
+    #[test]
+    fn bytes_vec() {
+        let bv = BytesVec::copy_from_slice(&LONG[..]);
+        // SharedVec size is 32
+        assert_eq!(bv.capacity(), mem::size_of::<SharedVec>() * 9);
+        assert_eq!(bv.len(), 263);
+        assert_eq!(bv.as_ref().len(), 263);
+        assert_eq!(bv.as_ref(), &LONG[..]);
+
+        let mut bv = BytesVec::copy_from_slice(&b"hello"[..]);
+        assert_eq!(bv.capacity(), mem::size_of::<SharedVec>());
+        assert_eq!(bv.len(), 5);
+        assert_eq!(bv.as_ref().len(), 5);
+        assert_eq!(bv.as_ref()[0], b"h"[0]);
+        bv.put_u8(b" "[0]);
+        assert_eq!(bv.as_ref(), &b"hello "[..]);
+        bv.put("world");
+        assert_eq!(bv, "hello world");
+
+        let b = Bytes::from(bv);
+        assert_eq!(b, "hello world");
+
+        let mut b = BytesMut::try_from(b).unwrap();
+        b.put(".");
+        assert_eq!(b, "hello world.");
     }
 }

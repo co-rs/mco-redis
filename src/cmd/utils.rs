@@ -1,5 +1,5 @@
 use std::convert::TryFrom;
-use crate::Bytes;
+use cogo_bytes::Bytes;
 
 
 use super::{Command, CommandError};

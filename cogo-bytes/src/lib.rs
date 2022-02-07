@@ -25,7 +25,7 @@
 //! example:
 //!
 //! ```rust
-//! use cogo_redis::{BytesMut, BufMut};
+//! use ntex_bytes::{BytesMut, BufMut};
 //!
 //! let mut buf = BytesMut::with_capacity(1024);
 //! buf.put(&b"hello world"[..]);
@@ -39,7 +39,7 @@
 //! let b = buf.split();
 //! assert_eq!(b, b"goodbye world"[..]);
 //!
-//! assert_eq!(buf.capacity(), 1030);
+//! assert_eq!(buf.capacity(), 998);
 //! ```
 //!
 //! In the above example, only a single buffer of 1024 is allocated. The handles
@@ -49,8 +49,17 @@
 //! See the [struct docs] for more details.
 //!
 //! [struct docs]: struct.Bytes.html
+
+#![deny(
+    warnings,
+//    missing_docs,
+//    missing_debug_implementations,
+    rust_2018_idioms
+)]
+#![doc(html_root_url = "https://docs.rs/ntex-bytes/")]
+
 pub mod buf;
-pub use self::buf::{Buf, BufMut};
+pub use crate::buf::{Buf, BufMut};
 
 mod bytes;
 mod debug;
@@ -59,8 +68,8 @@ mod pool;
 mod serde;
 mod string;
 
-pub use self::bytes::{Bytes, BytesMut, BytesVec};
-pub use self::string::ByteString;
+pub use crate::bytes::{Bytes, BytesMut, BytesVec};
+pub use crate::string::ByteString;
 
 #[doc(hidden)]
-pub use self::pool::{Pool, PoolId, PoolRef};
+pub use crate::pool::{Pool, PoolId, PoolRef};

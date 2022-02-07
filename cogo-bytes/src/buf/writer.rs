@@ -1,7 +1,6 @@
-
+use crate::BufMut;
 
 use std::{cmp, io};
-use bytes::BufMut;
 
 /// A `BufMut` adapter which implements `io::Write` for the inner value.
 ///
@@ -25,7 +24,7 @@ impl<B: BufMut> Writer<B> {
     /// # Examples
     ///
     /// ```rust
-    /// use cogo_redis::BufMut;
+    /// use ntex_bytes::BufMut;
     ///
     /// let mut buf = Vec::with_capacity(1024).writer();
     ///
@@ -42,7 +41,7 @@ impl<B: BufMut> Writer<B> {
     /// # Examples
     ///
     /// ```rust
-    /// use cogo_redis::BufMut;
+    /// use ntex_bytes::BufMut;
     ///
     /// let mut buf = vec![].writer();
     ///
@@ -59,7 +58,7 @@ impl<B: BufMut> Writer<B> {
     /// # Examples
     ///
     /// ```rust
-    /// use cogo_redis::BufMut;
+    /// use ntex_bytes::BufMut;
     /// use std::io;
     ///
     /// let mut buf = vec![].writer();
