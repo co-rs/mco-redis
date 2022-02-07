@@ -9,7 +9,7 @@ use bytes::Buf;
 /// Basic usage:
 ///
 /// ```
-/// use ntex_bytes::{Buf, Bytes};
+/// use cogo_redis::{Buf, Bytes};
 ///
 /// let buf = Bytes::from(&b"abc"[..]);
 /// let mut iter = buf.into_iter();
@@ -33,8 +33,8 @@ impl<T> IntoIter<T> {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{Buf, Bytes};
-    /// use ntex_bytes::buf::IntoIter;
+    /// use cogo_redis::{Buf, Bytes};
+    /// use cogo_redis::buf::IntoIter;
     ///
     /// let buf = Bytes::from_static(b"abc");
     /// let mut iter = IntoIter::new(buf);
@@ -52,7 +52,7 @@ impl<T> IntoIter<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use ntex_bytes::{Buf, Bytes};
+    /// use cogo_redis::{Buf, Bytes};
     ///
     /// let buf = Bytes::from(&b"abc"[..]);
     /// let mut iter = buf.into_iter();
@@ -73,7 +73,7 @@ impl<T> IntoIter<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use ntex_bytes::{Buf, Bytes};
+    /// use cogo_redis::{Buf, Bytes};
     ///
     /// let buf = Bytes::from(&b"abc"[..]);
     /// let mut iter = buf.into_iter();
@@ -93,7 +93,7 @@ impl<T> IntoIter<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use ntex_bytes::{Buf, BytesMut};
+    /// use cogo_redis::{Buf, BytesMut};
     ///
     /// let buf = BytesMut::from(&b"abc"[..]);
     /// let mut iter = buf.into_iter();
