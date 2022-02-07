@@ -1,15 +1,16 @@
 use std::collections::VecDeque;
 use std::{cell::RefCell, fmt, future::Future, pin::Pin, rc::Rc, task::Context, task::Poll};
-use cogo::{chan, go};
-use cogo::std::queue::seg_queue::SegQueue;
-use cogo::std::sync::Sender;
-use crate::codec_redis::{Codec, Request, Response};
+use either::Either;
 
+use ntex::io::{IoBoxed, IoRef, OnDisconnect, RecvError};
+use ntex::util::{poll_fn, ready, Either, Ready};
+use ntex::{channel::pool, service::Service};
+use crate::codec_redis::{Codec, Request, Response};
 
 use super::cmd::Command;
 use super::errors::{CommandError, Error};
 
-type Queue = Rc<RefCell<VecDeque<Sender<Result<Response, Error>>>>>;
+type Queue = Rc<RefCell<VecDeque<pool::Sender<Result<Response, Error>>>>>;
 
 #[derive(Clone)]
 /// Shared redis client
@@ -17,7 +18,7 @@ pub struct Client {
     io: IoRef,
     queue: Queue,
     disconnect: OnDisconnect,
-    pool: SegQueue<Result<Response, Error>>,
+    pool: pool::Pool<Result<Response, Error>>,
 }
 
 impl Client {
@@ -27,8 +28,7 @@ impl Client {
         // read redis response task
         let io_ref = io.get_ref();
         let queue2 = queue.clone();
-        cogo::coroutine::spawn( move ||{
-
+        ntex::rt::spawn(async move {
             poll_fn(|cx| loop {
                 match ready!(io.poll_recv(&Codec, cx)) {
                     Ok(item) => {
@@ -73,23 +73,26 @@ impl Client {
             queue,
             disconnect,
             io: io_ref,
-            pool: SegQueue::new(),
+            pool: pool::new(),
         }
     }
 
     /// Execute redis command
-    pub fn exec<T>(&self, cmd: T) -> impl Future<Output=Result<T::Output, CommandError>>
+    pub fn exec<T>(&self, cmd: T) -> impl Future<Output = Result<T::Output, CommandError>>
         where
             T: Command,
     {
         let is_open = !self.io.is_closed();
         let fut = self.call(cmd.to_request());
-        if !is_open {
-            Err(CommandError::Protocol(Error::PeerGone(None)))
-        } else {
-            fut.await
-                .map_err(CommandError::Protocol)
-                .and_then(|res| T::to_output(res.into_result().map_err(CommandError::Error)?))
+
+        async move {
+            if !is_open {
+                Err(CommandError::Protocol(Error::PeerGone(None)))
+            } else {
+                fut.await
+                    .map_err(CommandError::Protocol)
+                    .and_then(|res| T::to_output(res.into_result().map_err(CommandError::Error)?))
+            }
         }
     }
 
@@ -105,7 +108,7 @@ impl Client {
     }
 }
 
-impl Service<Request> for Client {
+impl Client {
     type Response = Response;
     type Error = Error;
     type Future = Either<CommandResult, Ready<Response, Error>>;
@@ -118,11 +121,11 @@ impl Service<Request> for Client {
         }
     }
 
-    fn call(&self, req: Request) -> Self::Future {
+    fn call(&self, req: Request) -> Either<CommandResult, Result<Response, Error>> {
         if let Err(e) = self.io.encode(req, &Codec) {
-            Either::Right(Ready::Err(e))
+            Either::Right(Err(e))
         } else {
-            let (tx, rx) = chan!();
+            let (tx, rx) = self.pool.channel();
             self.queue.borrow_mut().push_back(tx);
             Either::Left(CommandResult { rx })
         }

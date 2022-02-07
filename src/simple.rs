@@ -1,5 +1,8 @@
 use std::task::Poll;
+
+use ntex::{io::IoBoxed, io::RecvError, util::poll_fn, util::ready};
 use crate::codec_redis::Codec;
+
 use super::cmd::Command;
 use super::errors::{CommandError, Error};
 
@@ -16,8 +19,8 @@ impl SimpleClient {
 
     /// Execute redis command
     pub async fn exec<U>(&self, cmd: U) -> Result<U::Output, CommandError>
-    where
-        U: Command,
+        where
+            U: Command,
     {
         self.io.encode(cmd.to_request(), &Codec)?;
 
@@ -40,7 +43,7 @@ impl SimpleClient {
                 }
             };
         })
-        .await
+            .await
     }
 
     pub(crate) fn into_inner(self) -> IoBoxed {
