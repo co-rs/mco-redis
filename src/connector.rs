@@ -1,8 +1,9 @@
 use std::future::Future;
-
-
+use crate::bytes::{ByteString, PoolId, PoolRef};
+use crate::client::Client;
+use crate::cmd;
+use crate::simple::SimpleClient;
 use super::errors::ConnectError;
-use super::{cmd, Client, SimpleClient};
 
 /// Redis connector
 pub struct RedisConnector<A, T> {
@@ -95,14 +96,12 @@ where
     }
 
     /// Connect to redis server and create shared client
-    pub fn connect(&self) -> impl Future<Output = Result<Client, ConnectError>> {
-        let fut = self._connect();
-        async move { fut.await.map(|io| Client::new(io)) }
+    pub fn connect(&self) -> Result<Client, ConnectError> {
+        Ok(Client::new(self._connect()?))
     }
 
     /// Connect to redis server and create simple client
     pub fn connect_simple(&self) -> Result<SimpleClient, ConnectError> {
-        let fut = self._connect();
-        async move { fut.await.map(|io| SimpleClient::new(io)) }
+        Ok(SimpleClient::new(self._connect()?))
     }
 }

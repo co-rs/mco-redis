@@ -1,7 +1,6 @@
 use std::task::Poll;
-
+use crate::codec_redis::Codec;
 use super::cmd::Command;
-use super::codec::Codec;
 use super::errors::{CommandError, Error};
 
 /// Redis client

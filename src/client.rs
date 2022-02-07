@@ -3,10 +3,10 @@ use std::{cell::RefCell, fmt, future::Future, pin::Pin, rc::Rc, task::Context, t
 use cogo::{chan, go};
 use cogo::std::queue::seg_queue::SegQueue;
 use cogo::std::sync::Sender;
+use crate::codec_redis::{Codec, Request, Response};
 
 
 use super::cmd::Command;
-use super::codec::{Codec, Request, Response};
 use super::errors::{CommandError, Error};
 
 type Queue = Rc<RefCell<VecDeque<Sender<Result<Response, Error>>>>>;
