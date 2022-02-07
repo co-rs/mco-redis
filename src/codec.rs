@@ -1,7 +1,7 @@
 
 use std::{io, rc::Rc};
 
-use cogo_bytes::{Bytes, BytesMut, BytesVec};
+use crate::cogo_bytes::{Bytes, BytesMut, BytesVec};
 
 /// Trait of helper objects to write out messages as bytes.
 pub trait Encoder {

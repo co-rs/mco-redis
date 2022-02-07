@@ -5,8 +5,8 @@ use std::sync::atomic::Ordering::{Acquire, Relaxed, Release};
 use std::sync::atomic::{self, AtomicUsize};
 use std::{cmp, fmt, hash, mem, ptr, ptr::NonNull, slice, usize};
 
-use crate::pool::{PoolId, PoolRef};
-use crate::{buf::IntoIter, buf::UninitSlice, debug, Buf, BufMut};
+use crate::cogo_bytes::pool::{PoolId, PoolRef};
+use crate::cogo_bytes::{buf::IntoIter, buf::UninitSlice, debug, Buf, BufMut};
 
 /// A reference counted contiguous slice of memory.
 ///
@@ -20,7 +20,7 @@ use crate::{buf::IntoIter, buf::UninitSlice, debug, Buf, BufMut};
 /// be freed.
 ///
 /// ```
-/// use ntex_bytes::Bytes;
+/// use cogo_redis::cogo_bytes::Bytes;
 ///
 /// let mut mem = Bytes::from(&b"Hello world"[..]);
 /// let a = mem.slice(0..5);
@@ -128,7 +128,7 @@ pub struct Bytes {
 /// # Examples
 ///
 /// ```
-/// use ntex_bytes::{BytesMut, BufMut};
+/// use cogo_redis::cogo_bytes::{BytesMut, BufMut};
 ///
 /// let mut buf = BytesMut::with_capacity(64);
 ///
@@ -174,7 +174,7 @@ pub struct BytesMut {
 /// # Examples
 ///
 /// ```
-/// use ntex_bytes::{BytesVec, BufMut};
+/// use cogo_redis::cogo_bytes::{BytesVec, BufMut};
 ///
 /// let mut buf = BytesVec::with_capacity(64);
 ///
@@ -428,7 +428,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::Bytes;
+    /// use cogo_redis::cogo_bytes::Bytes;
     ///
     /// let b = Bytes::new();
     /// assert_eq!(&b[..], b"");
@@ -448,7 +448,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::Bytes;
+    /// use cogo_redis::cogo_bytes::Bytes;
     ///
     /// let b = Bytes::from_static(b"hello");
     /// assert_eq!(&b[..], b"hello");
@@ -465,7 +465,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::Bytes;
+    /// use cogo_redis::cogo_bytes::Bytes;
     ///
     /// let b = Bytes::from(&b"hello"[..]);
     /// assert_eq!(b.len(), 5);
@@ -480,7 +480,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::Bytes;
+    /// use cogo_redis::cogo_bytes::Bytes;
     ///
     /// let b = Bytes::new();
     /// assert!(b.is_empty());
@@ -494,7 +494,7 @@ impl Bytes {
     ///
     /// # Examples
     /// ```
-    /// use ntex_bytes::{Bytes, BytesMut};
+    /// use cogo_redis::cogo_bytes::{Bytes, BytesMut};
     ///
     /// assert!(Bytes::from(BytesMut::from(&[0, 0, 0, 0][..])).is_inline());
     /// assert!(Bytes::from(Vec::with_capacity(4)).is_inline());
@@ -535,7 +535,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::Bytes;
+    /// use cogo_redis::cogo_bytes::Bytes;
     ///
     /// let a = Bytes::from(&b"hello world"[..]);
     /// let b = a.slice(2..5);
@@ -594,7 +594,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::Bytes;
+    /// use cogo_redis::cogo_bytes::Bytes;
     ///
     /// let bytes = Bytes::from(&b"012345678"[..]);
     /// let as_slice = bytes.as_ref();
@@ -633,7 +633,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::Bytes;
+    /// use cogo_redis::cogo_bytes::Bytes;
     ///
     /// let mut a = Bytes::from(&b"hello world"[..]);
     /// let b = a.split_off(5);
@@ -672,7 +672,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::Bytes;
+    /// use cogo_redis::cogo_bytes::Bytes;
     ///
     /// let mut a = Bytes::from(&b"hello world"[..]);
     /// let b = a.split_to(5);
@@ -712,7 +712,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::Bytes;
+    /// use cogo_redis::cogo_bytes::Bytes;
     ///
     /// let mut buf = Bytes::from(&b"hello world"[..]);
     /// buf.truncate(5);
@@ -732,7 +732,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::Bytes;
+    /// use cogo_redis::cogo_bytes::Bytes;
     ///
     /// let mut buf = Bytes::from(&b"hello world"[..]);
     /// buf.trimdown();
@@ -762,7 +762,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::Bytes;
+    /// use cogo_redis::cogo_bytes::Bytes;
     ///
     /// let mut buf = Bytes::from(&b"hello world"[..]);
     /// buf.clear();
@@ -782,7 +782,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::Bytes;
+    /// use cogo_redis::cogo_bytes::Bytes;
     ///
     /// let a = Bytes::copy_from_slice(&b"Mary had a little lamb, little lamb, little lamb..."[..]);
     ///
@@ -814,7 +814,7 @@ impl Bytes {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{Buf, Bytes};
+    /// use cogo_redis::cogo_bytes::{Buf, Bytes};
     ///
     /// let buf = Bytes::from(&b"abc"[..]);
     /// let mut iter = buf.iter();
@@ -1053,7 +1053,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{BytesMut, BufMut};
+    /// use cogo_redis::cogo_bytes::{BytesMut, BufMut};
     ///
     /// let mut bytes = BytesMut::with_capacity(64);
     ///
@@ -1074,7 +1074,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{BytesMut, BufMut, PoolId};
+    /// use cogo_redis::cogo_bytes::{BytesMut, BufMut, PoolId};
     ///
     /// let mut bytes = BytesMut::with_capacity_in(64, PoolId::P1);
     ///
@@ -1132,7 +1132,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{BytesMut, BufMut};
+    /// use cogo_redis::cogo_bytes::{BytesMut, BufMut};
     ///
     /// let mut bytes = BytesMut::new();
     ///
@@ -1153,7 +1153,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesMut;
+    /// use cogo_redis::cogo_bytes::BytesMut;
     ///
     /// let b = BytesMut::from(&b"hello"[..]);
     /// assert_eq!(b.len(), 5);
@@ -1168,7 +1168,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesMut;
+    /// use cogo_redis::cogo_bytes::BytesMut;
     ///
     /// let b = BytesMut::with_capacity(64);
     /// assert!(b.is_empty());
@@ -1183,7 +1183,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesMut;
+    /// use cogo_redis::cogo_bytes::BytesMut;
     ///
     /// let b = BytesMut::with_capacity(64);
     /// assert_eq!(b.capacity(), 64);
@@ -1202,7 +1202,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{BytesMut, BufMut};
+    /// use cogo_redis::cogo_bytes::{BytesMut, BufMut};
     /// use std::thread;
     ///
     /// let mut b = BytesMut::with_capacity(64);
@@ -1239,7 +1239,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesMut;
+    /// use cogo_redis::cogo_bytes::BytesMut;
     ///
     /// let mut a = BytesMut::from(&b"hello world"[..]);
     /// let mut b = a.split_off(5);
@@ -1273,7 +1273,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{BytesMut, BufMut};
+    /// use cogo_redis::cogo_bytes::{BytesMut, BufMut};
     ///
     /// let mut buf = BytesMut::with_capacity(1024);
     /// buf.put(&b"hello world"[..]);
@@ -1301,7 +1301,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesMut;
+    /// use cogo_redis::cogo_bytes::BytesMut;
     ///
     /// let mut a = BytesMut::from(&b"hello world"[..]);
     /// let mut b = a.split_to(5);
@@ -1336,7 +1336,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesMut;
+    /// use cogo_redis::cogo_bytes::BytesMut;
     ///
     /// let mut buf = BytesMut::from(&b"hello world"[..]);
     /// buf.truncate(5);
@@ -1353,7 +1353,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesMut;
+    /// use cogo_redis::cogo_bytes::BytesMut;
     ///
     /// let mut buf = BytesMut::from(&b"hello world"[..]);
     /// buf.clear();
@@ -1377,7 +1377,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesMut;
+    /// use cogo_redis::cogo_bytes::BytesMut;
     ///
     /// let mut buf = BytesMut::new();
     ///
@@ -1404,7 +1404,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesMut;
+    /// use cogo_redis::cogo_bytes::BytesMut;
     ///
     /// let mut b = BytesMut::from(&b"hello world"[..]);
     ///
@@ -1454,7 +1454,7 @@ impl BytesMut {
     /// In the following example, a new buffer is allocated.
     ///
     /// ```
-    /// use ntex_bytes::BytesMut;
+    /// use cogo_redis::cogo_bytes::BytesMut;
     ///
     /// let mut buf = BytesMut::from(&b"hello"[..]);
     /// buf.reserve(64);
@@ -1464,7 +1464,7 @@ impl BytesMut {
     /// In the following example, the existing buffer is reclaimed.
     ///
     /// ```
-    /// use ntex_bytes::{BytesMut, BufMut};
+    /// use cogo_redis::cogo_bytes::{BytesMut, BufMut};
     ///
     /// let mut buf = BytesMut::with_capacity(128);
     /// buf.put(&[0; 64][..]);
@@ -1507,7 +1507,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesMut;
+    /// use cogo_redis::cogo_bytes::BytesMut;
     ///
     /// let mut buf = BytesMut::with_capacity(0);
     /// buf.extend_from_slice(b"aaabbb");
@@ -1525,7 +1525,7 @@ impl BytesMut {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{Buf, BytesMut};
+    /// use cogo_redis::cogo_bytes::{Buf, BytesMut};
     ///
     /// let buf = BytesMut::from(&b"abc"[..]);
     /// let mut iter = buf.iter();
@@ -1847,7 +1847,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{BytesVec, BufMut};
+    /// use cogo_redis::cogo_bytes::{BytesVec, BufMut};
     ///
     /// let mut bytes = BytesVec::with_capacity(64);
     ///
@@ -1868,7 +1868,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{BytesVec, BufMut, PoolId};
+    /// use cogo_redis::cogo_bytes::{BytesVec, BufMut, PoolId};
     ///
     /// let mut bytes = BytesVec::with_capacity_in(64, PoolId::P1);
     ///
@@ -1915,7 +1915,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{BytesVec, BufMut};
+    /// use cogo_redis::cogo_bytes::{BytesVec, BufMut};
     ///
     /// let mut bytes = BytesVec::new();
     ///
@@ -1936,7 +1936,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesVec;
+    /// use cogo_redis::cogo_bytes::BytesVec;
     ///
     /// let b = BytesVec::copy_from_slice(&b"hello"[..]);
     /// assert_eq!(b.len(), 5);
@@ -1951,7 +1951,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesVec;
+    /// use cogo_redis::cogo_bytes::BytesVec;
     ///
     /// let b = BytesVec::with_capacity(64);
     /// assert!(b.is_empty());
@@ -1966,7 +1966,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesVec;
+    /// use cogo_redis::cogo_bytes::BytesVec;
     ///
     /// let b = BytesVec::with_capacity(64);
     /// assert_eq!(b.capacity(), 64);
@@ -1985,7 +1985,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{BytesVec, BufMut};
+    /// use cogo_redis::cogo_bytes::{BytesVec, BufMut};
     /// use std::thread;
     ///
     /// let mut b = BytesVec::with_capacity(64);
@@ -2020,7 +2020,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{BytesVec, BufMut};
+    /// use cogo_redis::cogo_bytes::{BytesVec, BufMut};
     ///
     /// let mut buf = BytesVec::with_capacity(1024);
     /// buf.put(&b"hello world"[..]);
@@ -2047,7 +2047,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesVec;
+    /// use cogo_redis::cogo_bytes::BytesVec;
     ///
     /// let mut a = BytesVec::copy_from_slice(&b"hello world"[..]);
     /// let mut b = a.split_to(5);
@@ -2081,7 +2081,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesVec;
+    /// use cogo_redis::cogo_bytes::BytesVec;
     ///
     /// let mut buf = BytesVec::copy_from_slice(&b"hello world"[..]);
     /// buf.truncate(5);
@@ -2098,7 +2098,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesVec;
+    /// use cogo_redis::cogo_bytes::BytesVec;
     ///
     /// let mut buf = BytesVec::copy_from_slice(&b"hello world"[..]);
     /// buf.clear();
@@ -2122,7 +2122,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesVec;
+    /// use cogo_redis::cogo_bytes::BytesVec;
     ///
     /// let mut buf = BytesVec::new();
     ///
@@ -2149,7 +2149,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesVec;
+    /// use cogo_redis::cogo_bytes::BytesVec;
     ///
     /// let mut b = BytesVec::copy_from_slice(&b"hello world"[..]);
     ///
@@ -2199,7 +2199,7 @@ impl BytesVec {
     /// In the following example, a new buffer is allocated.
     ///
     /// ```
-    /// use ntex_bytes::BytesVec;
+    /// use cogo_redis::cogo_bytes::BytesVec;
     ///
     /// let mut buf = BytesVec::copy_from_slice(&b"hello"[..]);
     /// buf.reserve(64);
@@ -2209,7 +2209,7 @@ impl BytesVec {
     /// In the following example, the existing buffer is reclaimed.
     ///
     /// ```
-    /// use ntex_bytes::{BytesVec, BufMut};
+    /// use cogo_redis::cogo_bytes::{BytesVec, BufMut};
     ///
     /// let mut buf = BytesVec::with_capacity(128);
     /// buf.put(&[0; 64][..]);
@@ -2252,7 +2252,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::BytesVec;
+    /// use cogo_redis::cogo_bytes::BytesVec;
     ///
     /// let mut buf = BytesVec::with_capacity(0);
     /// buf.extend_from_slice(b"aaabbb");
@@ -2279,7 +2279,7 @@ impl BytesVec {
     /// # Examples
     ///
     /// ```
-    /// use ntex_bytes::{Buf, BytesVec};
+    /// use cogo_redis::cogo_bytes::{Buf, BytesVec};
     ///
     /// let buf = BytesVec::copy_from_slice(&b"abc"[..]);
     /// let mut iter = buf.iter();

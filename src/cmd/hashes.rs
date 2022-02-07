@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use cogo_bytes::Bytes;
+use crate::cogo_bytes::Bytes;
 
 use super::{utils, Command, CommandError};
 use crate::codec_redis::{BulkString, Request, Response};

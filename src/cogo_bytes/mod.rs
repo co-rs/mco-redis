@@ -25,7 +25,7 @@
 //! example:
 //!
 //! ```rust
-//! use ntex_bytes::{BytesMut, BufMut};
+//! use cogo_redis::cogo_bytes::{BytesMut, BufMut};
 //!
 //! let mut buf = BytesMut::with_capacity(1024);
 //! buf.put(&b"hello world"[..]);
@@ -49,17 +49,8 @@
 //! See the [struct docs] for more details.
 //!
 //! [struct docs]: struct.Bytes.html
-
-#![deny(
-    warnings,
-//    missing_docs,
-//    missing_debug_implementations,
-    rust_2018_idioms
-)]
-#![doc(html_root_url = "https://docs.rs/ntex-bytes/")]
-
 pub mod buf;
-pub use crate::buf::{Buf, BufMut};
+pub use self::buf::{Buf, BufMut};
 
 mod bytes;
 mod debug;
@@ -68,8 +59,8 @@ mod pool;
 mod serde;
 mod string;
 
-pub use crate::bytes::{Bytes, BytesMut, BytesVec};
-pub use crate::string::ByteString;
+pub use self::bytes::{Bytes, BytesMut, BytesVec};
+pub use self::string::ByteString;
 
 #[doc(hidden)]
-pub use crate::pool::{Pool, PoolId, PoolRef};
+pub use self::pool::{Pool, PoolId, PoolRef};
