@@ -81,7 +81,7 @@ impl Command for PingCommand {
 
     fn to_output(val: Response) -> Result<Self::Output, CommandError> {
         match val {
-            Response::String(val) => Ok(val),
+            Response::String(val) => Ok(val.to_string()),
             Response::Error(val) => Err(CommandError::Error(val)),
             _ => Err(CommandError::Output("Unknown response", val)),
         }
