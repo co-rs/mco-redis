@@ -6,7 +6,7 @@ use std::{cell::Cell, cell::RefCell, fmt, future::Future, mem, pin::Pin, ptr, rc
 
 use futures_core::task::__internal::AtomicWaker;
 
-use crate::cogo_bytes::{BytesMut, BytesVec};
+use crate::bytes::{BytesMut, BytesVec};
 
 pub struct Pool {
     idx: Cell<usize>,

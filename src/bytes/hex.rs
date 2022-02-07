@@ -1,4 +1,4 @@
-use crate::cogo_bytes::{Bytes, BytesMut, BytesVec};
+use crate::bytes::{Bytes, BytesMut, BytesVec};
 use std::fmt::{Formatter, LowerHex, Result, UpperHex};
 
 struct BytesRef<'a>(&'a [u8]);

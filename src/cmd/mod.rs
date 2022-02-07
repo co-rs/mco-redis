@@ -1,7 +1,7 @@
 //! Redis commands
 #![allow(non_snake_case, clippy::wrong_self_convention)]
 
-use crate::cogo_bytes::ByteString;
+use crate::bytes::ByteString;
 use super::codec_redis::{Request, Response};
 use super::errors::CommandError;
 

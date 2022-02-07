@@ -25,7 +25,7 @@
 //! example:
 //!
 //! ```rust
-//! use cogo_redis::cogo_bytes::{BytesMut, BufMut};
+//! use cogo_redis::bytes::{BytesMut, BufMut};
 //!
 //! let mut buf = BytesMut::with_capacity(1024);
 //! buf.put(&b"hello world"[..]);
