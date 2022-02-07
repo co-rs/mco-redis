@@ -40,3 +40,15 @@ pub mod commands {
     pub use super::strings::SetCommand;
     pub use super::utils::{BulkOutputCommand, IntOutputCommand};
 }
+
+pub type Bytes = Vec<u8>;
+pub type BytesMut = Vec<u8>;
+pub type ByteString = String;
+
+pub fn from_byte_uncheck(arg: Vec<u8>) -> String {
+    unsafe { String::from_utf8_unchecked(arg) }
+}
+
+pub fn try_from_byte(arg: &[u8]) -> String {
+    String::from_utf8_lossy(arg).to_string()
+}

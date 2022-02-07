@@ -1,5 +1,5 @@
 use std::convert::TryFrom;
-use std::io::Bytes;
+use crate::cmd::Bytes;
 
 use super::{Command, CommandError};
 use crate::codec::{Request, Response};
@@ -7,7 +7,7 @@ use crate::codec::{Request, Response};
 pub struct BulkOutputCommand(pub(crate) Request);
 
 impl Command for BulkOutputCommand {
-    type Output = Option<Bytes<dyn std::io::Read>>;
+    type Output = Option<Bytes>;
 
     fn to_request(self) -> Request {
         self.0
