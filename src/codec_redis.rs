@@ -338,7 +338,14 @@ impl TryFrom<Response> for ByteString {
         match val {
             Response::String(val) => Ok(val),
             Response::Bytes(val) => {
-                ByteString::from_utf8_lossy(&val).to_string()
+                match ByteString::try_from(val.as_ref()){
+                    Ok(v) => {
+                        Ok(v)
+                    }
+                    Err(e) => {
+                        Err(("from response fail",Response::Bytes(val)))
+                    }
+                }
             }
             _ => Err(("Cannot convert into a string", val)),
         }
