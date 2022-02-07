@@ -1,6 +1,7 @@
 //! Redis commands
 #![allow(non_snake_case, clippy::wrong_self_convention)]
 
+use crate::bytes::ByteString;
 use super::codec::{Request, Response};
 use super::errors::CommandError;
 
@@ -41,14 +42,7 @@ pub mod commands {
     pub use super::utils::{BulkOutputCommand, IntOutputCommand};
 }
 
-pub type Bytes = Vec<u8>;
-pub type BytesMut = Vec<u8>;
-pub type ByteString = String;
+pub type Bytes = bytes::Bytes;
+pub type BytesMut = bytes::BytesMut;
+pub type ByteStrings = ByteString;
 
-pub fn from_byte_uncheck(arg: Vec<u8>) -> String {
-    unsafe { String::from_utf8_unchecked(arg) }
-}
-
-pub fn try_from_byte(arg: &[u8]) -> String {
-    String::from_utf8_lossy(arg).to_string()
-}

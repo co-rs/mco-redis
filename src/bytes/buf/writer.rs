@@ -1,6 +1,7 @@
-use crate::BufMut;
+
 
 use std::{cmp, io};
+use bytes::BufMut;
 
 /// A `BufMut` adapter which implements `io::Write` for the inner value.
 ///

@@ -783,9 +783,9 @@ pub trait Buf {
     /// ```
     #[inline]
     #[allow(clippy::wrong_self_convention)]
-    fn to_bytes(&mut self) -> crate::Bytes {
+    fn to_bytes(&mut self) -> crate::bytes::Bytes {
         use super::BufMut;
-        let mut ret = crate::BytesMut::with_capacity(self.remaining());
+        let mut ret = crate::bytes::BytesMut::with_capacity(self.remaining());
         ret.put(self);
         ret.freeze()
     }

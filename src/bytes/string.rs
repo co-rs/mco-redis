@@ -1,7 +1,7 @@
 //! A UTF-8 encoded read-only string using Bytes as storage.
 use std::{borrow, convert::TryFrom, fmt, hash, ops, slice, str};
 
-use crate::{Bytes, BytesMut, BytesVec};
+use crate::bytes::{Bytes, BytesMut, BytesVec};
 
 /// An immutable UTF-8 encoded string with [`Bytes`] as a storage.
 #[derive(Clone, Default, Eq, PartialOrd, Ord)]
