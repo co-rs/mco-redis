@@ -1,4 +1,4 @@
-use bytes::Buf;
+use crate::bytes::Buf;
 
 /// Iterator over the bytes contained by the buffer.
 ///
@@ -9,7 +9,7 @@ use bytes::Buf;
 /// Basic usage:
 ///
 /// ```
-/// use cogo_redis::{Buf, Bytes};
+/// use cogo_redis::bytes::{Buf, Bytes};
 ///
 /// let buf = Bytes::from(&b"abc"[..]);
 /// let mut iter = buf.into_iter();
@@ -33,8 +33,8 @@ impl<T> IntoIter<T> {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::{Buf, Bytes};
-    /// use cogo_redis::buf::IntoIter;
+    /// use cogo_redis::bytes::{Buf, Bytes};
+    /// use cogo_redis::bytes::buf::IntoIter;
     ///
     /// let buf = Bytes::from_static(b"abc");
     /// let mut iter = IntoIter::new(buf);
@@ -52,7 +52,7 @@ impl<T> IntoIter<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use cogo_redis::{Buf, Bytes};
+    /// use cogo_redis::bytes::{Buf, Bytes};
     ///
     /// let buf = Bytes::from(&b"abc"[..]);
     /// let mut iter = buf.into_iter();
@@ -73,7 +73,7 @@ impl<T> IntoIter<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use cogo_redis::{Buf, Bytes};
+    /// use cogo_redis::bytes::{Buf, Bytes};
     ///
     /// let buf = Bytes::from(&b"abc"[..]);
     /// let mut iter = buf.into_iter();
@@ -93,7 +93,7 @@ impl<T> IntoIter<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use cogo_redis::{Buf, BytesMut};
+    /// use cogo_redis::bytes::{Buf, BytesMut};
     ///
     /// let buf = BytesMut::from(&b"abc"[..]);
     /// let mut iter = buf.into_iter();

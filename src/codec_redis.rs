@@ -1,7 +1,7 @@
 //! Redis protocol codec
 use std::{cmp, collections::HashMap, convert::TryFrom, hash::BuildHasher, hash::Hash, str};
 use crate::codec::{Decoder, Encoder};
-use crate::{BufMut, Bytes, BytesMut, ByteString};
+use crate::bytes::{BufMut, Bytes, BytesMut, ByteString};
 use super::errors::Error;
 /// Codec to read/write redis values
 pub struct Codec;

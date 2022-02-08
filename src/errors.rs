@@ -2,7 +2,7 @@
 use std::io;
 
 use derive_more::{Display, From};
-use crate::ByteString;
+use crate::bytes::ByteString;
 
 use super::codec_redis::Response;
 

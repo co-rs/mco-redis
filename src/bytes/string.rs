@@ -48,7 +48,7 @@ impl ByteString {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::ByteString;
+    /// use cogo_redis::bytes::ByteString;
     ///
     /// let a = ByteString::from("hello world");
     /// let b = a.slice(2..5);
@@ -79,7 +79,7 @@ impl ByteString {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::ByteString;
+    /// use cogo_redis::bytes::ByteString;
     ///
     /// let mut a = ByteString::from("hello world");
     /// let b = a.split_off(5);
@@ -109,7 +109,7 @@ impl ByteString {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::ByteString;
+    /// use cogo_redis::bytes::ByteString;
     ///
     /// let mut a = ByteString::from("hello world");
     /// let b = a.split_to(5);
@@ -208,7 +208,10 @@ impl From<&str> for ByteString {
 impl<'a> From<borrow::Cow<'a, str>> for ByteString {
     #[inline]
     fn from(value: borrow::Cow<'a, str>) -> Self {
-        Self::from(value.to_owned())
+        match value {
+            borrow::Cow::Owned(s) => Self::from(s),
+            borrow::Cow::Borrowed(s) => Self::from(s),
+        }
     }
 }
 
@@ -340,7 +343,7 @@ mod test {
 
     #[test]
     fn test_basics() {
-        let s = ByteString::from_static("test");
+        let mut s = ByteString::from_static("test");
         s.trimdown();
         assert_eq!(s, "test");
         assert_eq!(s, *"test");

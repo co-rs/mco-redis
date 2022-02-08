@@ -25,7 +25,7 @@
 //! example:
 //!
 //! ```rust
-//! use cogo_redis::{BytesMut, BufMut};
+//! use cogo_redis::bytes::{BytesMut, BufMut};
 //!
 //! let mut buf = BytesMut::with_capacity(1024);
 //! buf.put(&b"hello world"[..]);
@@ -39,7 +39,7 @@
 //! let b = buf.split();
 //! assert_eq!(b, b"goodbye world"[..]);
 //!
-//! assert_eq!(buf.capacity(), 1030);
+//! assert_eq!(buf.capacity(), 998);
 //! ```
 //!
 //! In the above example, only a single buffer of 1024 is allocated. The handles
