@@ -3,6 +3,11 @@ use std::{io, rc::Rc};
 
 use crate::bytes::{Bytes, BytesMut, BytesVec};
 
+
+pub trait EncoderDecoder:Encoder+Decoder{}
+
+impl <T>EncoderDecoder for T where T:Encoder+Decoder{}
+
 /// Trait of helper objects to write out messages as bytes.
 pub trait Encoder {
     /// The type of items consumed by the `Encoder`

@@ -1,35 +1,29 @@
-use std::collections::VecDeque;
-use std::{cell::RefCell, fmt, future::Future, pin::Pin, rc::Rc, task::Context, task::Poll};
+use std::sync::Arc;
+use cogo::go;
 use either::Either;
-
-use ntex::io::{IoBoxed, IoRef, OnDisconnect, RecvError};
-use ntex::util::{poll_fn, ready, Either, Ready};
-use ntex::{channel::pool, service::Service};
 use crate::codec_redis::{Codec, Request, Response};
-
 use super::cmd::Command;
 use super::errors::{CommandError, Error};
-
-type Queue = Rc<RefCell<VecDeque<pool::Sender<Result<Response, Error>>>>>;
+use cogo::std::sync::{Receiver, Sender, SyncQueue};
+use crate::pool::Pool;
+use crate::simple::SimpleClient;
 
 #[derive(Clone)]
 /// Shared redis client
 pub struct Client {
-    io: IoRef,
-    queue: Queue,
-    disconnect: OnDisconnect,
-    pool: pool::Pool<Result<Response, Error>>,
+    io: SimpleClient,
+    queue: Arc<SyncQueue<Sender<Result<Response, Error>>>>,
+    pool: Pool,
 }
 
 impl Client {
-    pub(crate) fn new(io: IoBoxed) -> Self {
-        let queue: Queue = Rc::new(RefCell::new(VecDeque::new()));
-
+    pub(crate) fn new(io: SimpleClient) -> Self {
+        let queue = Arc::new(SyncQueue::new());
         // read redis response task
         let io_ref = io.get_ref();
         let queue2 = queue.clone();
-        ntex::rt::spawn(async move {
-            poll_fn(|cx| loop {
+        go!(move ||{
+            loop {
                 match ready!(io.poll_recv(&Codec, cx)) {
                     Ok(item) => {
                         if let Some(tx) = queue2.borrow_mut().pop_front() {
@@ -63,35 +57,32 @@ impl Client {
                         return Poll::Ready(());
                     }
                 }
-            })
-                .await
+            }
         });
-
-        let disconnect = io_ref.on_disconnect();
-
         Client {
             queue,
-            disconnect,
             io: io_ref,
-            pool: pool::new(),
+            pool: Pool::new(),
         }
     }
 
     /// Execute redis command
-    pub fn exec<T>(&self, cmd: T) -> impl Future<Output = Result<T::Output, CommandError>>
+    pub fn exec<T>(&self, cmd: T) -> Result<T::Output, CommandError>
         where
             T: Command,
     {
         let is_open = !self.io.is_closed();
-        let fut = self.call(cmd.to_request());
-
-        async move {
-            if !is_open {
-                Err(CommandError::Protocol(Error::PeerGone(None)))
-            } else {
-                fut.await
-                    .map_err(CommandError::Protocol)
-                    .and_then(|res| T::to_output(res.into_result().map_err(CommandError::Error)?))
+        let result = self.call(cmd.to_request());
+        if !is_open {
+            Err(CommandError::Protocol(Error::PeerGone(None)))
+        } else {
+            match result {
+                Either::Left(v) => {
+                    v.map_err(CommandError::Protocol)
+                }
+                Either::Right(v) => {
+                    T::to_output(v.map_err(CommandError::Error)?)
+                }
             }
         }
     }
@@ -109,48 +100,30 @@ impl Client {
 }
 
 impl Client {
-    type Response = Response;
-    type Error = Error;
-    type Future = Either<CommandResult, Ready<Response, Error>>;
-
-    fn poll_ready(&self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        if self.disconnect.poll_ready(cx).is_ready() {
-            Poll::Ready(Err(Error::PeerGone(None)))
-        } else {
-            Poll::Ready(Ok(()))
-        }
-    }
-
     fn call(&self, req: Request) -> Either<CommandResult, Result<Response, Error>> {
         if let Err(e) = self.io.encode(req, &Codec) {
             Either::Right(Err(e))
         } else {
             let (tx, rx) = self.pool.channel();
-            self.queue.borrow_mut().push_back(tx);
-            Either::Left(CommandResult { rx })
+            self.queue.push(tx);
+            match rx.recv() {
+                Ok(v) => {
+                    Either::Left(CommandResult::Ok(v))
+                }
+                Err(e) => {
+                    Either::Left(CommandResult::Err(e))
+                }
+            }
         }
     }
 }
 
-impl fmt::Debug for Client {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl std::fmt::Debug for Client {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Client")
             .field("connected", &!self.io.is_closed())
             .finish()
     }
 }
 
-pub struct CommandResult {
-    rx: pool::Receiver<Result<Response, Error>>,
-}
-
-impl Future for CommandResult {
-    type Output = Result<Response, Error>;
-
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        match ready!(self.rx.poll_recv(cx)) {
-            Ok(res) => Poll::Ready(res),
-            Err(_) => Poll::Ready(Err(Error::PeerGone(None))),
-        }
-    }
-}
+pub type CommandResult = Result<Response, Error>;
