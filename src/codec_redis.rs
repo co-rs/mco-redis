@@ -8,7 +8,7 @@ pub struct Codec;
 use crate::bytes::Buf;
 
 impl Encoder for Codec {
-    type Item = Request;
+    type ItemEncode = Request;
     type Error = Error;
 
     fn encode(&self, msg: Request, buf: &mut BytesMut) -> Result<(), Self::Error> {
@@ -51,10 +51,10 @@ impl Encoder for Codec {
 }
 
 impl Decoder for Codec {
-    type Item = Response;
+    type ItemDecode = Response;
     type Error = Error;
 
-    fn decode(&self, buf: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+    fn decode(&self, buf: &mut BytesMut) -> Result<Option<Self::ItemDecode>, Self::Error> {
         match decode(buf, 0)? {
             Some((pos, item)) => {
                 buf.advance(pos);

@@ -11,16 +11,16 @@ impl <T>EncoderDecoder for T where T:Encoder+Decoder{}
 /// Trait of helper objects to write out messages as bytes.
 pub trait Encoder {
     /// The type of items consumed by the `Encoder`
-    type Item;
+    type ItemEncode;
 
     /// The type of encoding errors.
     type Error: std::fmt::Debug;
 
     /// Encodes a frame into the buffer provided.
-    fn encode(&self, item: Self::Item, dst: &mut BytesMut) -> Result<(), Self::Error>;
+    fn encode(&self, item: Self::ItemEncode, dst: &mut BytesMut) -> Result<(), Self::Error>;
 
     /// Encodes a frame into the buffer provided.
-    fn encode_vec(&self, item: Self::Item, dst: &mut BytesVec) -> Result<(), Self::Error> {
+    fn encode_vec(&self, item: Self::ItemEncode, dst: &mut BytesVec) -> Result<(), Self::Error> {
         dst.with_bytes_mut(|dst| self.encode(item, dst))
     }
 }
@@ -28,7 +28,7 @@ pub trait Encoder {
 /// Decoding of frames via buffers.
 pub trait Decoder {
     /// The type of decoded frames.
-    type Item;
+    type ItemDecode;
 
     /// The type of unrecoverable frame decoding errors.
     ///
@@ -38,10 +38,10 @@ pub trait Decoder {
     type Error: std::fmt::Debug;
 
     /// Attempts to decode a frame from the provided buffer of bytes.
-    fn decode(&self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error>;
+    fn decode(&self, src: &mut BytesMut) -> Result<Option<Self::ItemDecode>, Self::Error>;
 
     /// Attempts to decode a frame from the provided buffer of bytes.
-    fn decode_vec(&self, src: &mut BytesVec) -> Result<Option<Self::Item>, Self::Error> {
+    fn decode_vec(&self, src: &mut BytesVec) -> Result<Option<Self::ItemDecode>, Self::Error> {
         src.with_bytes_mut(|src| self.decode(src))
     }
 }
@@ -50,10 +50,10 @@ impl<T> Encoder for Rc<T>
 where
     T: Encoder,
 {
-    type Item = T::Item;
+    type ItemEncode = T::ItemEncode;
     type Error = T::Error;
 
-    fn encode(&self, item: Self::Item, dst: &mut BytesMut) -> Result<(), Self::Error> {
+    fn encode(&self, item: Self::ItemEncode, dst: &mut BytesMut) -> Result<(), Self::Error> {
         (**self).encode(item, dst)
     }
 }
@@ -62,10 +62,10 @@ impl<T> Decoder for Rc<T>
 where
     T: Decoder,
 {
-    type Item = T::Item;
+    type ItemDecode = T::ItemDecode;
     type Error = T::Error;
 
-    fn decode(&self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+    fn decode(&self, src: &mut BytesMut) -> Result<Option<Self::ItemDecode>, Self::Error> {
         (**self).decode(src)
     }
 }
@@ -77,7 +77,7 @@ where
 pub struct BytesCodec;
 
 impl Encoder for BytesCodec {
-    type Item = Bytes;
+    type ItemEncode = Bytes;
     type Error = io::Error;
 
     #[inline]
@@ -88,10 +88,10 @@ impl Encoder for BytesCodec {
 }
 
 impl Decoder for BytesCodec {
-    type Item = BytesMut;
+    type ItemDecode = BytesMut;
     type Error = io::Error;
 
-    fn decode(&self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+    fn decode(&self, src: &mut BytesMut) -> Result<Option<Self::ItemDecode>, Self::Error> {
         if src.is_empty() {
             Ok(None)
         } else {
