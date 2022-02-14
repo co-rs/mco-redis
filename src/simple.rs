@@ -3,7 +3,7 @@ use std::io::{Read, Write};
 use std::task::Poll;
 use cogo::net::TcpStream;
 use crate::bytes::BytesMut;
-use crate::codec::{Decoder, EncoderDecoder};
+use crate::codec::{Decoder, Encoder, EncoderDecoder};
 use crate::codec_redis::{Codec, Request};
 
 use super::cmd::Command;
@@ -11,14 +11,14 @@ use super::errors::{CommandError, Error};
 
 /// Redis client
 pub struct SimpleClient {
-    pub codec: Box<dyn EncoderDecoder>,
+    pub codec: Codec,
     pub io: RefCell<TcpStream>,
 }
 
 impl SimpleClient {
     /// Create new simple client
     pub fn new(io: TcpStream) -> Self {
-        SimpleClient { codec: Box::new(Codec {}), io: RefCell::new(io) }
+        SimpleClient { codec: Codec {}, io: RefCell::new(io) }
     }
 
     /// Execute redis command
