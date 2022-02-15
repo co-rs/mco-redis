@@ -1,13 +1,12 @@
 use std::cell::RefCell;
 use std::io::{Read, Write};
-use std::task::Poll;
 use cogo::net::TcpStream;
 use crate::bytes::BytesMut;
-use crate::codec::{Decoder, Encoder, EncoderDecoder};
-use crate::codec_redis::{Codec, Request};
+use crate::codec::{Decoder, Encoder};
+use crate::codec_redis::{Codec};
 
 use super::cmd::Command;
-use super::errors::{CommandError, Error};
+use super::errors::{CommandError};
 
 /// Redis client
 pub struct SimpleClient {

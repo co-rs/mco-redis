@@ -40,7 +40,7 @@ impl<A> RedisConnector<A>
     }
 
     /// Use custom connector
-    pub fn connector(self) -> RedisConnector<A> where IoBoxed: From<U::Response> {
+    pub fn connector(self) -> RedisConnector<A> {
         RedisConnector {
             address: self.address,
             passwords: self.passwords,

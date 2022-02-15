@@ -2,7 +2,6 @@ use cogo::chan;
 use cogo::std::sync::{Receiver, Sender, SyncQueue};
 use crate::codec_redis::Response;
 use crate::errors::Error;
-use crate::simple::SimpleClient;
 
 pub struct Pool {
     // pub clients: SyncQueue<SimpleClient>,
