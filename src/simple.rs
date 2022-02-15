@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::io;
 use std::io::{Read, Write};
 use cogo::net::TcpStream;
-use crate::bytes::BytesMut;
+use crate::bytes::{BufMut, BytesMut, ByteString};
 use crate::codec::{Decoder, Encoder};
 use crate::codec_redis::{Codec, Request, Response};
 use crate::errors::Error;
@@ -56,10 +56,13 @@ impl SimpleClient {
         let io = io.as_mut().unwrap();
         io.write_all(arg)?;
         io.flush();
-        let mut buf_out = BytesMut::new();
-        io.read(&mut buf_out)?;
+        let mut buffer = BytesMut::with_capacity(64);
         loop {
-            match self.codec.decode(&mut buf_out)? {
+            let mut buf = BytesMut::with_capacity(64);
+            buf.put(&[0; 64][..]);
+            io.read(&mut buf)?;
+            buffer.extend(buf);
+            match self.codec.decode(&mut buffer)? {
                 None => {
                     continue;
                 }
