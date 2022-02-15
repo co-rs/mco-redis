@@ -6,6 +6,7 @@ cogo redis client
 
 * example:
 ```toml
+#toml
 cogo-redis = "0.1.0"
 ```
 
