@@ -68,3 +68,9 @@ pub enum CommandError {
 }
 
 impl std::error::Error for CommandError {}
+
+impl From<std::io::Error> for CommandError{
+    fn from(arg: io::Error) -> Self {
+        CommandError::Protocol(Error::PeerGone(Some(arg)))
+    }
+}
