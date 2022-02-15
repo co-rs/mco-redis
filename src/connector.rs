@@ -55,19 +55,16 @@ impl<A> RedisConnector<A>
     fn _connect(&mut self) -> Result<SimpleClient, ConnectError> {
         let passwords = self.passwords.clone();
         let conn = TcpStream::connect(self.address.clone())?;
-        // let io = IoBoxed::from(fut.await?);
         // io.set_memory_pool(pool);
-        // io.set_disconnect_timeout(Seconds::ZERO.into());
         if passwords.is_empty() {
-            Ok(io)
+            Ok(SimpleClient::new(conn))
         } else {
             let client = SimpleClient::new(conn);
             for password in passwords {
-                if client.exec(cmd::Auth(password)).await? {
+                if client.exec(cmd::Auth(password))? {
                     return Ok(client);
                 }
             }
-            self.connector = None;
             Err(ConnectError::Unauthorized)
         }
     }

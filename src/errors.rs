@@ -15,6 +15,12 @@ pub enum Error {
     /// An IO error occurred
     #[display(fmt = "Io error: {:?}", _0)]
     PeerGone(Option<io::Error>),
+
+    #[display(fmt = "Command error: {:?}", _0)]
+    Command(String),
+
+    #[display(fmt = "Recv error: {:?}", _0)]
+    Recv(String),
 }
 
 impl std::error::Error for Error {}
@@ -22,8 +28,10 @@ impl std::error::Error for Error {}
 impl Clone for Error {
     fn clone(&self) -> Self {
         match self {
-            Error::Parse(_) => Error::Parse(String::new()),
+            Error::Parse(s) => Error::Parse(s.clone()),
             Error::PeerGone(_) => Error::PeerGone(None),
+            Error::Command(v)=> Error::Command(v.clone()),
+            Error::Recv(v)=> Error::Recv(v.clone()),
         }
     }
 }
@@ -31,6 +39,12 @@ impl Clone for Error {
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Error {
         Error::PeerGone(Some(err))
+    }
+}
+
+impl From<CommandError> for Error{
+    fn from(arg: CommandError) -> Self {
+        Error::Command(format!("{:?}",arg))
     }
 }
 
