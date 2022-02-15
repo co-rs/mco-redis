@@ -7,4 +7,3 @@ pub mod bytes;
 pub mod connector;
 pub mod client;
 pub mod simple;
-pub mod pool;
