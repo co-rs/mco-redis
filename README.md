@@ -3,6 +3,12 @@ cogo redis client
 
 * Redis client for cogo coroutine runtime
 
+
+* example:
+```toml
+cogo-redis = "0.1.0"
+```
+
 ```rust
 use cogo_redis::cmd;
 use cogo_redis::connector::RedisConnector;
