@@ -6,8 +6,8 @@ cogo redis client
 
 * example:
 ```toml
-#toml
-cogo-redis = "0.1.0"
+#Cargo.toml
+cogo-redis = "0.1"
 ```
 
 ```rust
