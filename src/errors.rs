@@ -3,7 +3,6 @@ use std::io;
 
 use derive_more::{Display, From};
 use crate::bytes::ByteString;
-
 use super::codec_redis::Response;
 
 #[derive(Debug, Display)]
@@ -47,6 +46,12 @@ pub enum ConnectError {
 }
 
 impl std::error::Error for ConnectError {}
+
+impl From<std::io::Error> for ConnectError {
+    fn from(arg: std::io::Error) -> Self {
+        ConnectError::Connect(arg.to_string())
+    }
+}
 
 #[derive(Debug, Display, From)]
 /// Redis command execution errors
