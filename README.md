@@ -1,18 +1,18 @@
 # co-redis
-cogo redis client
+mco redis client
 
-* Redis client for cogo coroutine runtime
+* Redis client for mco coroutine runtime
 
 
 * example:
 ```toml
 #Cargo.toml
-cogo-redis = "0.1"
+mco-redis = "0.1"
 ```
 
 ```rust
-use cogo_redis::cmd;
-use cogo_redis::connector::RedisConnector;
+use mco_redis::cmd;
+use mco_redis::connector::RedisConnector;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {

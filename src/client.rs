@@ -1,12 +1,12 @@
 use std::sync::Arc;
 use std::sync::mpsc::RecvError;
-use cogo::chan;
-use cogo::coroutine::spawn;
+use mco::chan;
+use mco::coroutine::spawn;
 use either::Either;
 use crate::codec_redis::{Codec, Request, Response};
 use super::cmd::Command;
 use super::errors::{CommandError, Error};
-use cogo::std::sync::{Receiver, Sender};
+use mco::std::sync::{Receiver, Sender};
 use crate::bytes::BytesMut;
 use crate::simple::SimpleClient;
 

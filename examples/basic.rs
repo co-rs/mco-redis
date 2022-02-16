@@ -1,5 +1,5 @@
-use cogo_redis::cmd;
-use cogo_redis::connector::RedisConnector;
+use mco_redis::cmd;
+use mco_redis::connector::RedisConnector;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {

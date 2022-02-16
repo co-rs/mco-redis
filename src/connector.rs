@@ -1,6 +1,6 @@
 use std::io;
 use std::net::ToSocketAddrs;
-use cogo::net::TcpStream;
+use mco::net::TcpStream;
 use crate::bytes::{ByteString};
 use crate::client::Client;
 use crate::cmd;

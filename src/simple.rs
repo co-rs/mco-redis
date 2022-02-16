@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::io;
 use std::io::{Read, Write};
-use cogo::net::TcpStream;
+use mco::net::TcpStream;
 use crate::bytes::{BufMut, BytesMut, ByteString};
 use crate::codec::{Decoder, Encoder};
 use crate::codec_redis::{Codec, Request, Response};

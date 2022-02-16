@@ -48,7 +48,7 @@ impl ByteString {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::bytes::ByteString;
+    /// use mco_redis::bytes::ByteString;
     ///
     /// let a = ByteString::from("hello world");
     /// let b = a.slice(2..5);
@@ -79,7 +79,7 @@ impl ByteString {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::bytes::ByteString;
+    /// use mco_redis::bytes::ByteString;
     ///
     /// let mut a = ByteString::from("hello world");
     /// let b = a.split_off(5);
@@ -109,7 +109,7 @@ impl ByteString {
     /// # Examples
     ///
     /// ```
-    /// use cogo_redis::bytes::ByteString;
+    /// use mco_redis::bytes::ByteString;
     ///
     /// let mut a = ByteString::from("hello world");
     /// let b = a.split_to(5);
