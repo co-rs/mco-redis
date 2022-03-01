@@ -8,14 +8,13 @@ use crate::codec_redis::{Request, Response};
 /// numeric index.
 ///
 /// ```rust
-/// use ntex_redis::{cmd, RedisConnector};
+/// use mco_redis::{cmd, RedisConnector};
 ///
-/// #[ntex::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let redis = RedisConnector::new("127.0.0.1:6379").connect().await?;
+///  fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let redis = RedisConnector::new("127.0.0.1:6379").connect()?;
 ///
 ///     // select db for current connection
-///     let success = redis.exec(cmd::Select(1)).await?;
+///     let success = redis.exec(cmd::Select(1))?;
 ///
 ///     assert!(success);
 ///
@@ -52,14 +51,13 @@ impl Command for SelectCommand {
 /// or to measure latency.
 ///
 /// ```rust
-/// use ntex_redis::{cmd, RedisConnector};
+/// use mco_redis::{cmd, RedisConnector};
 ///
-/// #[ntex::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let redis = RedisConnector::new("127.0.0.1:6379").connect().await?;
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let redis = RedisConnector::new("127.0.0.1:6379").connect()?;
 ///
 ///     // ping connection
-///     let response = redis.exec(cmd::Ping()).await?;
+///     let response = redis.exec(cmd::Ping())?;
 ///
 ///     assert_eq!(&response, "PONG");
 ///

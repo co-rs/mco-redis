@@ -7,24 +7,24 @@ use std::convert::TryFrom;
 /// Removes the specified keys. A key is ignored if it does not exist.
 ///
 /// ```rust
-/// use ntex_redis::{cmd, RedisConnector};
+/// use mco_redis::{cmd, RedisConnector};
 /// # use rand::{thread_rng, Rng, distributions::Alphanumeric};
 /// # fn gen_random_key() -> String {
 /// #    thread_rng().sample_iter(&Alphanumeric).take(12).map(char::from).collect::<String>()
 /// # }
 ///
-/// #[ntex::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let redis = RedisConnector::new("127.0.0.1:6379").connect().await?;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let redis = RedisConnector::new("127.0.0.1:6379").connect()?;
 ///     let key = gen_random_key();
 ///
 ///     // set string value
-///     redis.exec(cmd::Set(&key, "value")).await?;
+///     redis.exec(cmd::Set(&key, "value"))?;
 ///
 ///     // remove keys
 ///     let value = redis.exec(
 ///         cmd::Del(&key).key("test_1").key("test_2")
-///     ).await?;
+///     )?;
 ///
 ///     assert_eq!(value, 1);
 ///     Ok(())
@@ -45,24 +45,24 @@ where
 /// Returns if key exists.
 ///
 /// ```rust
-/// use ntex_redis::{cmd, RedisConnector};
+/// use mco_redis::{cmd, RedisConnector};
 /// # use rand::{thread_rng, Rng, distributions::Alphanumeric};
 /// # fn gen_random_key() -> String {
 /// #    thread_rng().sample_iter(&Alphanumeric).take(12).map(char::from).collect::<String>()
 /// # }
 ///
-/// #[ntex::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let redis = RedisConnector::new("127.0.0.1:6379").connect().await?;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let redis = RedisConnector::new("127.0.0.1:6379").connect()?;
 ///     let key = gen_random_key();
 ///
 ///     // set string value
-///     redis.exec(cmd::Set(&key, "value")).await?;
+///     redis.exec(cmd::Set(&key, "value"))?;
 ///
 ///     // check keys existence
 ///     let value = redis.exec(
 ///         cmd::Exists(&key).keys(vec!["test_1", "test_2"])
-///     ).await?;
+///     )?;
 ///
 ///     assert_eq!(value, 1);
 ///     Ok(())

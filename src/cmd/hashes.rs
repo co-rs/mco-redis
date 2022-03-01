@@ -10,22 +10,22 @@ use crate::codec_redis::{BulkString, Request, Response};
 /// Returns the value associated with field in the hash stored at key.
 ///
 /// ```rust
-/// use ntex_redis::{cmd, RedisConnector};
+/// use mco_redis::{cmd, RedisConnector};
 /// # use rand::{thread_rng, Rng, distributions::Alphanumeric};
 /// # fn gen_random_key() -> String {
 /// #    thread_rng().sample_iter(&Alphanumeric).take(12).map(char::from).collect::<String>()
 /// # }
 ///
-/// #[ntex::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let redis = RedisConnector::new("127.0.0.1:6379").connect().await?;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let redis = RedisConnector::new("127.0.0.1:6379").connect()?;
 ///     let key = gen_random_key();
 ///
 ///     // create hashmap
-///     redis.exec(cmd::HSet(&key, "test-key", "value")).await?;
+///     redis.exec(cmd::HSet(&key, "test-key", "value"))?;
 ///
 ///     // get field value
-///     let value = redis.exec(cmd::HGet(&key, "test-key")).await?;
+///     let value = redis.exec(cmd::HGet(&key, "test-key"))?;
 ///
 ///     assert_eq!(value.unwrap(), "value");
 ///     Ok(())
@@ -74,22 +74,22 @@ impl Command for HGetAllCommand {
 /// Sets field in the hash stored at key to value.
 ///
 /// ```rust
-/// use ntex_redis::{cmd, RedisConnector};
+/// use mco_redis::{cmd, RedisConnector};
 /// # use rand::{thread_rng, Rng, distributions::Alphanumeric};
 /// # fn gen_random_key() -> String {
 /// #    thread_rng().sample_iter(&Alphanumeric).take(12).map(char::from).collect::<String>()
 /// # }
 ///
-/// #[ntex::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let redis = RedisConnector::new("127.0.0.1:6379").connect().await?;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let redis = RedisConnector::new("127.0.0.1:6379").connect()?;
 ///     let key = gen_random_key();
 ///
 ///     // create hashmap and set field
-///     redis.exec(cmd::HSet(&key, "test-key", "value")).await?;
+///     redis.exec(cmd::HSet(&key, "test-key", "value"))?;
 ///
 ///     // get field value
-///     let value = redis.exec(cmd::HGet(&key, "test-key")).await?;
+///     let value = redis.exec(cmd::HGet(&key, "test-key"))?;
 ///
 ///     assert_eq!(value.unwrap(), "value");
 ///     Ok(())
@@ -150,22 +150,22 @@ impl Command for HSetCommand {
 /// Removes the specified fields from the hash stored at key.
 ///
 /// ```rust
-/// use ntex_redis::{cmd, RedisConnector};
+/// use mco_redis::{cmd, RedisConnector};
 /// # use rand::{thread_rng, Rng, distributions::Alphanumeric};
 /// # fn gen_random_key() -> String {
 /// #    thread_rng().sample_iter(&Alphanumeric).take(12).map(char::from).collect::<String>()
 /// # }
 ///
-/// #[ntex::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let redis = RedisConnector::new("127.0.0.1:6379").connect().await?;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let redis = RedisConnector::new("127.0.0.1:6379").connect()?;
 ///     let key = gen_random_key();
 ///
 ///     // create hashmap and set field
-///     redis.exec(cmd::HSet(&key, "test-key", "value")).await?;
+///     redis.exec(cmd::HSet(&key, "test-key", "value"))?;
 ///
 ///     // delete hashmap field
-///     let value = redis.exec(cmd::HDel(&key, "test-key")).await?;
+///     let value = redis.exec(cmd::HDel(&key, "test-key"))?;
 ///
 ///     assert_eq!(value, 1);
 ///     Ok(())
@@ -224,22 +224,22 @@ impl Command for HDelCommand {
 /// Returns the number of fields contained in the hash stored at key.
 ///
 /// ```rust
-/// use ntex_redis::{cmd, RedisConnector};
+/// use mco_redis::{cmd, RedisConnector};
 /// # use rand::{thread_rng, Rng, distributions::Alphanumeric};
 /// # fn gen_random_key() -> String {
 /// #    thread_rng().sample_iter(&Alphanumeric).take(12).map(char::from).collect::<String>()
 /// # }
 ///
-/// #[ntex::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let redis = RedisConnector::new("127.0.0.1:6379").connect().await?;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let redis = RedisConnector::new("127.0.0.1:6379").connect()?;
 ///     let key = gen_random_key();
 ///
 ///     // create hashmap and set field
-///     redis.exec(cmd::HSet(&key, "test-key", "value")).await?;
+///     redis.exec(cmd::HSet(&key, "test-key", "value"))?;
 ///
 ///     // get len of hashmap
-///     let value = redis.exec(cmd::HLen(&key)).await?;
+///     let value = redis.exec(cmd::HLen(&key))?;
 ///
 ///     assert_eq!(value, 1);
 ///     Ok(())

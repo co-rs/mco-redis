@@ -6,22 +6,22 @@ use crate::codec_redis::{BulkString, Request, Response};
 /// Returns the element at index index in the list stored at key.
 ///
 /// ```rust
-/// use ntex_redis::{cmd, RedisConnector};
+/// use mco_redis::{cmd, RedisConnector};
 /// # use rand::{thread_rng, Rng, distributions::Alphanumeric};
 /// # fn gen_random_key() -> String {
 /// #    thread_rng().sample_iter(&Alphanumeric).take(12).map(char::from).collect::<String>()
 /// # }
 ///
-/// #[ntex::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let redis = RedisConnector::new("127.0.0.1:6379").connect().await?;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let redis = RedisConnector::new("127.0.0.1:6379").connect()?;
 ///     let key = gen_random_key();
 ///
 ///     // create list with one value
-///     redis.exec(cmd::LPush(&key, "value")).await?;
+///     redis.exec(cmd::LPush(&key, "value"))?;
 ///
 ///     // get value by index
-///     let value = redis.exec(cmd::LIndex(&key, 0)).await?;
+///     let value = redis.exec(cmd::LIndex(&key, 0))?;
 ///
 ///     assert_eq!(value.unwrap(), "value");
 ///     Ok(())
@@ -43,22 +43,22 @@ where
 /// Removes and returns the first element of the list stored at key.
 ///
 /// ```rust
-/// use ntex_redis::{cmd, RedisConnector};
+/// use mco_redis::{cmd, RedisConnector};
 /// # use rand::{thread_rng, Rng, distributions::Alphanumeric};
 /// # fn gen_random_key() -> String {
 /// #    thread_rng().sample_iter(&Alphanumeric).take(12).map(char::from).collect::<String>()
 /// # }
 ///
-/// #[ntex::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let redis = RedisConnector::new("127.0.0.1:6379").connect().await?;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let redis = RedisConnector::new("127.0.0.1:6379").connect()?;
 ///     let key = gen_random_key();
 ///
 ///     // create list with one value
-///     redis.exec(cmd::LPush(&key, "value")).await?;
+///     redis.exec(cmd::LPush(&key, "value"))?;
 ///
 ///     // pop first elements from the list
-///     let value = redis.exec(cmd::LPop(&key)).await?;
+///     let value = redis.exec(cmd::LPop(&key))?;
 ///
 ///     assert_eq!(value.unwrap(), "value");
 ///     Ok(())
@@ -79,22 +79,22 @@ where
 /// Removes and returns the last element of the list stored at key.
 ///
 /// ```rust
-/// use ntex_redis::{cmd, RedisConnector};
+/// use mco_redis::{cmd, RedisConnector};
 /// # use rand::{thread_rng, Rng, distributions::Alphanumeric};
 /// # fn gen_random_key() -> String {
 /// #    thread_rng().sample_iter(&Alphanumeric).take(12).map(char::from).collect::<String>()
 /// # }
 ///
-/// #[ntex::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let redis = RedisConnector::new("127.0.0.1:6379").connect().await?;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let redis = RedisConnector::new("127.0.0.1:6379").connect()?;
 ///     let key = gen_random_key();
 ///
 ///     // create list with one value
-///     redis.exec(cmd::LPush(&key, "value")).await?;
+///     redis.exec(cmd::LPush(&key, "value"))?;
 ///
 ///     // pop last elements from the list
-///     let value = redis.exec(cmd::RPop(&key)).await?;
+///     let value = redis.exec(cmd::RPop(&key))?;
 ///
 ///     assert_eq!(value.unwrap(), "value");
 ///     Ok(())
@@ -115,22 +115,22 @@ where
 /// Insert all the specified values at the head of the list stored at key.
 ///
 /// ```rust
-/// use ntex_redis::{cmd, RedisConnector};
+/// use mco_redis::{cmd, RedisConnector};
 /// # use rand::{thread_rng, Rng, distributions::Alphanumeric};
 /// # fn gen_random_key() -> String {
 /// #    thread_rng().sample_iter(&Alphanumeric).take(12).map(char::from).collect::<String>()
 /// # }
 ///
-/// #[ntex::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let redis = RedisConnector::new("127.0.0.1:6379").connect().await?;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let redis = RedisConnector::new("127.0.0.1:6379").connect()?;
 ///     let key = gen_random_key();
 ///
 ///     // create list with one value
 ///     redis.exec(
 ///         cmd::LPush(&key, "value1")
 ///            .extend(vec!["value2", "value3", "value4"])
-///     ).await?;
+///     )?;
 ///
 ///     Ok(())
 /// }
@@ -139,15 +139,15 @@ where
 /// `LPushCommand::if_exists()` method changes `LPUSH` command to `LPUSHX` command
 ///
 /// ```rust
-/// use ntex_redis::{cmd, RedisConnector};
+/// # use mco_redis::{cmd, RedisConnector};
 /// # use rand::{thread_rng, Rng, distributions::Alphanumeric};
 /// # fn gen_random_key() -> String {
 /// #    thread_rng().sample_iter(&Alphanumeric).take(12).map(char::from).collect::<String>()
 /// # }
 ///
-/// #[ntex::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let redis = RedisConnector::new("127.0.0.1:6379").connect().await?;
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let redis = RedisConnector::new("127.0.0.1:6379").connect()?;
 ///     let key = gen_random_key();
 ///
 ///     // create list with one value only if key already exists
@@ -155,7 +155,7 @@ where
 ///         cmd::LPush(&key, "value1")
 ///             .value("value2")
 ///             .if_exists()
-///     ).await?;
+///     )?;
 ///
 ///     Ok(())
 /// }
